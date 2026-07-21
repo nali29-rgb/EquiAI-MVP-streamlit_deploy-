@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Import your backend engines from the core folder
-from core.math_engine import calculate_funnel_metrics  # adjust function name if slightly different
+from core.math_engine import calculate_funnel_bias  # adjust function name if slightly different
 from core.llama_agent import generate_compliance_prose
 from datetime import datetime
 
@@ -309,7 +309,7 @@ def upload_analysis_page():
             df = pd.read_csv(uploaded_file)
             
             # Run the Math Engine
-            metrics = calculate_funnel_metrics(df)
+            metrics = calculate_funnel_bias(df)
             
             # Run Llama Engine (pass the selected ATS string, e.g., "Greenhouse")
             report = generate_compliance_prose(metrics, selected_ats)
