@@ -1,5 +1,9 @@
 import streamlit as st
 import pandas as pd
+
+# Import your backend engines from the core folder
+from core.math_engine import calculate_funnel_metrics  # adjust function name if slightly different
+from core.llama_agent import generate_compliance_prose
 from datetime import datetime
 
 st.set_page_config(page_title="EquiAudit AI", page_icon="⚖️", layout="wide")
@@ -301,7 +305,17 @@ def upload_analysis_page():
         st.success(f"{len(uploaded_files)} file(s) uploaded and staged for analysis.")
         for uploaded_file in uploaded_files:
             st.markdown(f"- **{uploaded_file.name}** · *{round(uploaded_file.size / 1024, 1)} KB*")
-        st.info("No backend integration yet — this is a polished frontend experience with placeholder dataset staging.")
+        if uploaded_file is not None:
+            df = pd.read_csv(uploaded_file)
+            
+            # Run the Math Engine
+            metrics = calculate_funnel_metrics(df)
+            
+            # Run Llama Engine (pass the selected ATS string, e.g., "Greenhouse")
+            report = generate_compliance_prose(metrics, selected_ats)
+            
+            # Render the report on the screen
+            st.markdown(report)
         st.button("Analyze dataset", key="start_analysis")
     else:
         st.info("Drop a supported dataset or click to browse your files.")
