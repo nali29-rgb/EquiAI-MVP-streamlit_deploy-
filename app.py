@@ -2,9 +2,10 @@ import streamlit as st
 import pandas as pd
 
 # Import your backend engines from the core folder
-from core.math_engine import calculate_funnel_bias  # adjust function name if slightly different
+from core.math_engine import calculate_funnel_bias
 from core.llama_agent import generate_compliance_prose
 from datetime import datetime
+
 
 st.set_page_config(page_title="EquiAudit AI", page_icon="⚖️", layout="wide")
 
@@ -300,23 +301,32 @@ def upload_analysis_page():
     st.markdown("<div class='card-hero'>", unsafe_allow_html=True)
     st.markdown("<div class='section-title'>Upload hiring datasets</div>")
     st.write("Drag CSV, Excel, or JSON applicant upload files into the area below. We will stage them for your next compliance review.")
+    
+    # 1. Target ATS Dropdown Selection
+    selected_ats = st.selectbox(
+        "Target ATS Platform:", 
+        ["Greenhouse", "Workday Recruiting"]
+    )
+    
     uploaded_files = st.file_uploader("Upload your analysis files", type=["csv", "xlsx", "json"], accept_multiple_files=True)
+    
     if uploaded_files:
         st.success(f"{len(uploaded_files)} file(s) uploaded and staged for analysis.")
-        for uploaded_file in uploaded_files:
-            st.markdown(f"- **{uploaded_file.name}** · *{round(uploaded_file.size / 1024, 1)} KB*")
-        if uploaded_file is not None:
-            df = pd.read_csv(uploaded_file)
-            
-            # Run the Math Engine
-            metrics = calculate_funnel_bias(df)
-            
-            # Run Llama Engine (pass the selected ATS string, e.g., "Greenhouse")
-            report = generate_compliance_prose(metrics, selected_ats)
-            
-            # Render the report on the screen
-            st.markdown(report)
-        st.button("Analyze dataset", key="start_analysis")
+        for f in uploaded_files:
+            st.markdown(f"- **{f.name}** · *{round(f.size / 1024, 1)} KB*")
+        
+        # 2. Trigger Audit Execution
+        if st.button("Analyze dataset", key="start_analysis"):
+            with st.spinner("Executing Math Engine & querying Llama Compliance Engine..."):
+                target_file = uploaded_files[0]
+                df = pd.read_csv(target_file)
+                
+                # Run backend math and LLM engine
+                metrics = calculate_funnel_bias(df)
+                report = generate_compliance_prose(metrics, selected_ats)
+                
+                st.divider()
+                st.markdown(report)
     else:
         st.info("Drop a supported dataset or click to browse your files.")
     st.markdown("</div>", unsafe_allow_html=True)
