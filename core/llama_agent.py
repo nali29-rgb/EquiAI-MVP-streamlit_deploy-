@@ -22,7 +22,10 @@ def generate_compliance_prose(funnel_metrics: dict, ats_system: str) -> str:
         "3. REAL-WORLD GREENHOUSE ARCHITECTURE ONLY: Reference Custom Application Questions, Auto-Reject Rules, and Scorecard Focus Attributes.\n"
         "4. CHOOSE ONE SPECIFIC CULPRIT: Declare definitively that a rigid 'Continuous Employment History' Auto-Reject rule is the structural culprit.\n"
         "5. UNIVERSAL COMPLIANCE MANDATE: You must start the entire report with an explicit note declaring that a multi-state legal approach has been taken for universal compliance.\n\n"
-        
+
+        "CRITICAL FORMATTING INSTRUCTIONS:\n"
+        "1. **Audit Protocol Note**: Write this at the very top using standard text formatting or bold styling. DO NOT use gray, faint, or low-contrast text colors/HTML tags.\n"
+        "2. **Targeted Systemic Fixes**: Format EVERY step on its OWN INDIVIDUAL LINE as a numbered list item. Never run steps together in a single paragraph.\n"
         "Generate the report using this exact Markdown layout and tone:"
     )
     
