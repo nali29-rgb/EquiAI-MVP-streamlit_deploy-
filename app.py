@@ -9,12 +9,15 @@ from datetime import datetime
 
 st.set_page_config(page_title="EquiAudit AI", page_icon="⚖️", layout="wide")
 
-PRIMARY = "#748bc5"
-SECONDARY = "#f18d7a"
-TEXT = "#171717"
-BORDER = "rgba(148, 163, 184, 0.18)"
-SURFACE = "#f4f6ff"
-BACKGROUND = "#fff1f9"
+# -----------------------------------------------------------------------------
+# EXACT BRAND COLOR PALETTE (RGB)
+# -----------------------------------------------------------------------------
+PRIMARY = "rgb(116, 139, 197)"      # Hex: #748BC5
+SECONDARY = "rgb(241, 141, 122)"   # Hex: #F18D7A
+BACKGROUND = "rgb(255, 241, 249)"  # Hex: #FFF1F9
+TEXT = "rgb(23, 23, 23)"           # Hex: #171717
+SURFACE = "#FFFFFF"                 # Crisp white cards for high readability
+BORDER = "rgba(116, 139, 197, 0.20)"
 
 PAGE_OPTIONS = [
     "Dashboard",
@@ -102,7 +105,7 @@ SETTINGS = {
         "policy_alerts": False,
     },
     "branding": {
-        "accent_color": "#748bc5",
+        "accent_color": PRIMARY,
         "logo_text": "EquiAudit AI",
         "report_header": "Acme Hiring Bias Review",
     },
@@ -115,46 +118,168 @@ SETTINGS = {
 
 
 # -----------------------------------------------------------------------------
-# Utility components
+# Custom Modern CSS & Layout Engine
 # -----------------------------------------------------------------------------
 
 def render_css():
     st.markdown(
         f"""
         <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+            
             :root {{
                 color-scheme: light;
-                font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             }}
-            .stApp {{ background: {BACKGROUND}; color: {TEXT}; }}
-            .block-container {{ padding-top: 1rem; padding-bottom: 1.5rem; padding-left: 2rem; padding-right: 2rem; max-width: 1680px; }}
-            .stSidebar {{ background: #ffffff; border-right: 1px solid {BORDER}; }}
-            .sidebar .css-1d391kg {{ background: #ffffff; }}
-            .main .css-18e3th9 {{ gap: 1rem; }}
-            .stButton>button {{ background: {PRIMARY}; color: white; border: none; border-radius: 14px; padding: 0.85rem 1rem; box-shadow: none; }}
-            .stButton>button:hover {{ background: {SECONDARY}; color: white; }}
-            .st-buzzer {{ box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08); }}
-            .card {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 24px; padding: 1.2rem; box-shadow: 0 20px 50px rgba(15, 23, 42, 0.04); }}
-            .card-compact {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 20px; padding: 1rem; }}
-            .card-hero {{ background: {SURFACE}; border: 1px solid {PRIMARY}; border-radius: 28px; padding: 1.4rem; }}
-            .section-title {{ font-size: 1.1rem; font-weight: 700; color: {PRIMARY}; margin-bottom: 0.65rem; }}
-            .small-muted {{ color: #6b7280; font-size: 0.95rem; }}
-            .risk-badge {{ display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 0.9rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700; }}
-            .badge-low {{ background: #eef2ff; color: #3730a3; }}
-            .badge-medium {{ background: #fef3c7; color: #92400e; }}
-            .badge-high {{ background: #fff1f2; color: #b91c1c; }}
-            .badge-critical {{ background: #fee2e2; color: #991b1b; }}
-            .metric-title {{ color: {TEXT}; font-size: 0.95rem; margin-bottom: 0.35rem; }}
-            .metric-value {{ font-size: 2.2rem; font-weight: 700; margin-bottom: 0.35rem; }}
-            .metric-note {{ font-size: 0.95rem; color: #64748b; }}
-            .table-card th {{ text-align: left; padding: 0.95rem 0.75rem; color: {TEXT}; font-weight: 700; border-bottom: 1px solid rgba(148, 163, 184, 0.20); }}
-            .table-card td {{ padding: 0.82rem 0.75rem; border-bottom: 1px solid rgba(148, 163, 184, 0.10); }}
-            .table-card tbody tr:hover {{ background: #f8fafc; }}
-            .top-nav {{ margin-bottom: 1.5rem; }}
-            .top-nav__item {{ display: inline-flex; align-items: center; gap: 0.6rem; color: {TEXT}; font-size: 0.95rem; }}
-            .top-nav__pill {{ background: {SECONDARY}; color: white; padding: 0.55rem 0.9rem; border-radius: 999px; font-weight: 700; }}
-            .focus-visible:focus {{ outline: 3px solid rgba(75, 108, 250, 0.35); outline-offset: 2px; }}
-            .streamlit-expanderHeader {{ outline-offset: 2px; }}
+            
+            html, body, [class*="css"] {{
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+                color: {TEXT} !important;
+            }}
+
+            .stApp {{
+                background-color: {BACKGROUND} !important;
+            }}
+
+            /* Spacing & Layout */
+            .block-container {{
+                padding-top: 1.5rem !important;
+                padding-bottom: 2.5rem !important;
+                max-width: 1450px;
+            }}
+
+            /* Sidebar Restyling */
+            [data-testid="stSidebar"] {{
+                background-color: {SURFACE} !important;
+                border-right: 1px solid {BORDER} !important;
+            }}
+
+            /* Primary Button Component */
+            .stButton > button {{
+                background: {PRIMARY} !important;
+                color: #FFFFFF !important;
+                border: none !important;
+                border-radius: 10px !important;
+                padding: 0.65rem 1.25rem !important;
+                font-weight: 600 !important;
+                box-shadow: 0 2px 4px rgba(116, 139, 197, 0.25) !important;
+                transition: all 0.2s ease !important;
+            }}
+
+            .stButton > button:hover {{
+                background: {SECONDARY} !important;
+                box-shadow: 0 4px 12px rgba(241, 141, 122, 0.35) !important;
+                transform: translateY(-1px);
+            }}
+
+            /* Container Cards */
+            .card {{
+                background: {SURFACE};
+                border: 1px solid {BORDER};
+                border-radius: 16px;
+                padding: 1.5rem;
+                box-shadow: 0 4px 20px rgba(23, 23, 23, 0.03);
+                margin-bottom: 1.25rem;
+            }}
+
+            .card-compact {{
+                background: {SURFACE};
+                border: 1px solid {BORDER};
+                border-radius: 12px;
+                padding: 1.2rem;
+                box-shadow: 0 2px 10px rgba(23, 23, 23, 0.02);
+            }}
+
+            .card-hero {{
+                background: linear-gradient(135deg, {SURFACE} 0%, {BACKGROUND} 100%);
+                border: 1px solid {BORDER};
+                border-radius: 18px;
+                padding: 1.75rem;
+                box-shadow: 0 4px 20px rgba(116, 139, 197, 0.12);
+            }}
+
+            /* Section & Typography Styling */
+            .section-title {{
+                font-size: 1.15rem;
+                font-weight: 700;
+                color: {TEXT};
+                margin-bottom: 0.35rem;
+            }}
+
+            .small-muted {{
+                color: rgba(23, 23, 23, 0.65);
+                font-size: 0.9rem;
+            }}
+
+            .metric-title {{
+                color: rgba(23, 23, 23, 0.65);
+                font-size: 0.875rem;
+                font-weight: 500;
+                margin-bottom: 0.25rem;
+            }}
+
+            .metric-value {{
+                font-size: 2rem;
+                font-weight: 700;
+                color: {TEXT};
+                letter-spacing: -0.02em;
+                margin-bottom: 0.25rem;
+            }}
+
+            .metric-note {{
+                font-size: 0.85rem;
+                color: {PRIMARY};
+                font-weight: 600;
+            }}
+
+            /* Risk Status Badges */
+            .risk-badge {{
+                display: inline-flex;
+                align-items: center;
+                padding: 0.3rem 0.75rem;
+                border-radius: 999px;
+                font-size: 0.8rem;
+                font-weight: 600;
+            }}
+            .badge-low {{ background: rgba(116, 139, 197, 0.15); color: {PRIMARY}; border: 1px solid rgba(116, 139, 197, 0.3); }}
+            .badge-medium {{ background: rgba(241, 141, 122, 0.15); color: {SECONDARY}; border: 1px solid rgba(241, 141, 122, 0.3); }}
+            .badge-high {{ background: #FFEBEB; color: #D93838; border: 1px solid #FFC2C2; }}
+
+            /* Table Formatting */
+            .table-card {{
+                width: 100%;
+                border-collapse: collapse;
+            }}
+            .table-card th {{
+                text-align: left;
+                padding: 0.85rem 0.75rem;
+                color: {TEXT};
+                font-size: 0.85rem;
+                font-weight: 700;
+                border-bottom: 1px solid {BORDER};
+            }}
+            .table-card td {{
+                padding: 0.85rem 0.75rem;
+                border-bottom: 1px solid rgba(23, 23, 23, 0.05);
+                font-size: 0.9rem;
+            }}
+
+            /* Top Nav Styling */
+            .top-nav__pill {{
+                background: {SECONDARY};
+                color: #FFFFFF;
+                padding: 0.45rem 0.85rem;
+                border-radius: 999px;
+                font-size: 0.85rem;
+                font-weight: 600;
+            }}
+
+            /* Dropzone Customization */
+            [data-testid="stFileUploader"] {{
+                background-color: {SURFACE} !important;
+                border: 2px dashed {BORDER} !important;
+                border-radius: 12px !important;
+                padding: 1rem !important;
+            }}
         </style>
         """,
         unsafe_allow_html=True,
@@ -164,20 +289,20 @@ def render_css():
 def render_top_navigation(page_name: str):
     left, middle, right = st.columns([3, 3, 2], gap="large")
     with left:
-        st.markdown(f"<div class='top-nav'><span class='top-nav__item'><strong>{SETTINGS['workspace_name']}</strong></span></div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='padding-top: 0.5rem;'><strong>{SETTINGS['workspace_name']}</strong></div>", unsafe_allow_html=True)
     with middle:
-        query = st.text_input("Search the workspace", placeholder="Search reports, keywords, laws...", key="top_search")
+        query = st.text_input("Search workspace", placeholder="Search reports, keywords, laws...", key="top_search", label_visibility="collapsed")
         if query:
-            st.info(f"Search placeholder: {query}")
+            st.info(f"Search results for: {query}")
     with right:
         st.markdown(
-            "<div style='display:flex; gap:0.5rem; justify-content:flex-end;'>"
+            "<div style='display:flex; gap:0.5rem; justify-content:flex-end; padding-top: 0.25rem;'>"
             "<span class='top-nav__pill'>Notifications</span>"
             "<span class='top-nav__pill'>Profile</span>"
             "</div>",
             unsafe_allow_html=True,
         )
-    st.markdown("---")
+    st.markdown("<hr style='border:none; border-top:1px solid rgba(116, 139, 197, 0.2); margin:1rem 0 1.5rem 0;' />", unsafe_allow_html=True)
 
 
 def render_sidebar():
@@ -185,7 +310,7 @@ def render_sidebar():
     page = st.sidebar.radio("", PAGE_OPTIONS, index=0)
     st.sidebar.markdown("---")
     st.sidebar.markdown("## Quick actions")
-    st.sidebar.button("Start new compliance review")
+    st.sidebar.button("Start compliance review")
     st.sidebar.button("Open latest report")
     st.sidebar.markdown("---")
     st.sidebar.markdown("## Account")
@@ -200,7 +325,6 @@ def risk_badge(level: str) -> str:
         "Low": "risk-badge badge-low",
         "Medium": "risk-badge badge-medium",
         "High": "risk-badge badge-high",
-        "Critical": "risk-badge badge-critical",
     }
     color = classes.get(level, classes["Low"])
     return f"<span class='{color}'>{level}</span>"
@@ -224,7 +348,7 @@ def render_section(title: str, subtitle: str = ""):
 
 
 # -----------------------------------------------------------------------------
-# Page renderers
+# Page Renderers
 # -----------------------------------------------------------------------------
 
 def dashboard_page():
@@ -237,14 +361,15 @@ def dashboard_page():
     with row1[2]:
         render_summary_card("Active datasets", "5", "Uploaded in the last 30 days")
 
-    st.markdown("<div class='card'> <div class='section-title'>Risk trend</div>", unsafe_allow_html=True)
+    st.write(" ")
+    st.markdown("<div class='card'> <div class='section-title'>Risk trend analysis</div>", unsafe_allow_html=True)
     st.line_chart(RISK_TREND)
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.write(" ")
     left, right = st.columns([2, 1], gap="large")
     with left:
-        render_section("Recent analyses", "Latest compliance and bias reports")
+        render_section("Recent analyses", "Latest compliance and bias audit reports")
         table_rows = ""
         for item in RECENT_ANALYSES:
             table_rows += (
@@ -255,7 +380,7 @@ def dashboard_page():
         st.markdown(
             """
             <div class='card'>
-            <table class='table-card' style='width:100%; border-collapse:collapse;'>
+            <table class='table-card'>
                 <thead><tr><th>Analysis</th><th>Date</th><th>Score</th><th>Status</th><th>Risk</th></tr></thead>
                 <tbody>
             """
@@ -264,92 +389,69 @@ def dashboard_page():
             unsafe_allow_html=True,
         )
     with right:
-        render_section("Quick actions", "Launch a new dataset, review a report, or share findings")
+        render_section("Quick actions", "Launch or share findings")
         st.markdown(
             "<div class='card'>"
-            "<div style='display:grid; gap:1rem'>"
-            "<button class='stButton'>Upload new hiring file</button>"
-            "<button class='stButton'>Review latest bias finding</button>"
-            "<button class='stButton'>Create report preview</button>"
+            "<div style='display:grid; gap:0.75rem'>"
+            "<button class='stButton'>Upload hiring dataset</button>"
+            "<button class='stButton'>Review bias finding</button>"
+            "<button class='stButton'>Export report preview</button>"
             "</div></div>",
             unsafe_allow_html=True,
         )
-
-    st.write(" ")
-    render_section("Recent uploads", "Files ready for analysis with source and type details")
-    upload_rows = ""
-    for item in UPLOAD_EXAMPLES:
-        upload_rows += f"<tr><td>{item['file']}</td><td>{item['size']}</td><td>{item['status']}</td></tr>"
-    st.markdown(
-        """
-        <div class='card'>
-            <table class='table-card' style='width:100%; border-collapse:collapse;'>
-                <thead><tr><th>File</th><th>Size</th><th>Status</th></tr></thead>
-                <tbody>
-        """
-        + upload_rows +
-        """
-                </tbody></table>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 def upload_analysis_page():
     render_top_navigation("Upload Analysis")
     st.markdown("<div class='card-hero'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>Upload hiring datasets</div>")
-    st.write("Drag CSV, Excel, or JSON applicant upload files into the area below. We will stage them for your next compliance review.")
+    st.markdown("<div class='section-title'>Upload hiring datasets</div>", unsafe_allow_html=True)
+    st.write("Drag CSV or Excel applicant files into the stage below to trigger automated bias and legal compliance checks.")
     
-    # 1. Target ATS Dropdown Selection
     selected_ats = st.selectbox(
         "Target ATS Platform:", 
         ["Greenhouse", "Workday Recruiting"]
     )
     
-    uploaded_files = st.file_uploader("Upload your analysis files", type=["csv", "xlsx", "json"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Upload applicant data", type=["csv", "xlsx", "json"], accept_multiple_files=True)
     
     if uploaded_files:
         st.success(f"{len(uploaded_files)} file(s) uploaded and staged for analysis.")
         for f in uploaded_files:
             st.markdown(f"- **{f.name}** · *{round(f.size / 1024, 1)} KB*")
         
-        # 2. Trigger Audit Execution
         if st.button("Analyze dataset", key="start_analysis"):
-            with st.spinner("Executing Math Engine & querying Llama Compliance Engine..."):
+            with st.spinner("Running Math Engine & querying Llama Compliance Engine..."):
                 target_file = uploaded_files[0]
                 df = pd.read_csv(target_file)
                 
-                # Run backend math and LLM engine
                 metrics = calculate_funnel_bias(df)
                 report = generate_compliance_prose(metrics, selected_ats)
                 
                 st.divider()
                 st.markdown(report)
     else:
-        st.info("Drop a supported dataset or click to browse your files.")
+        st.info("Drop a supported dataset or click to browse files.")
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.write(" ")
     settings_card = st.columns([2, 1], gap="large")
     with settings_card[0]:
-        render_section("Analysis settings", "Customize the audit before you run it")
+        render_section("Analysis settings", "Customize the audit before execution")
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         st.selectbox("Review scope", ["All departments", "Customer support", "Engineering", "Sales"], index=0)
         st.selectbox("Compliance profile", ["Standard bias audit", "AI regulation deep scan", "EEOC readiness check"], index=0)
-        st.checkbox("Include legal references in the report", value=True)
+        st.checkbox("Include legal references in output", value=True)
         st.select_slider("Confidence threshold", options=["70%", "75%", "80%", "85%", "90%", "95%"], value="85%")
         st.markdown("</div>", unsafe_allow_html=True)
     with settings_card[1]:
-        render_section("Upload guide", "What this page supports")
+        render_section("Upload guide", "Supported inputs")
         st.markdown(
             "<div class='card'>"
-            "<ul style='padding-left:1.15rem; color:#475569;'>"
-            "<li>CSV, Excel, JSON files</li>"
-            "<li>Candidate outcome datasets</li>"
-            "<li>Structured applicant metadata</li>"
-            "<li>Ready for batch review</li>"
+            "<ul style='padding-left:1.15rem; color:rgb(23, 23, 23);'>"
+            "<li>CSV, Excel, JSON exports</li>"
+            "<li>Candidate stage outcomes</li>"
+            "<li>Demographic metadata</li>"
+            "<li>Instant batch processing</li>"
             "</ul>"
             "</div>",
             unsafe_allow_html=True,
@@ -358,37 +460,33 @@ def upload_analysis_page():
 
 def analysis_progress_page():
     render_top_navigation("Analysis Progress")
-    render_section("Analysis in progress", "Simulated workflow for dataset ingestion and compliance review")
+    render_section("Analysis in progress", "Data pipeline workflow")
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.progress(0.76)
     st.write("**76% complete — estimated 90 seconds remaining**")
     steps = [
-        ("Reading files", True),
-        ("Cleaning data", True),
-        ("Finding keywords", True),
-        ("Running statistics", True),
-        ("Consulting legal database", False),
-        ("Generating recommendations", False),
-        ("Building PDF", False),
+        ("Reading applicant files", True),
+        ("Cleaning demographic data", True),
+        ("Identifying proxy keywords", True),
+        ("Calculating EEOC impact ratios", True),
+        ("Querying multi-jurisdictional legal engine", False),
+        ("Generating ATS configuration steps", False),
+        ("Rendering final audit report", False),
     ]
     for label, done in steps:
         icon = "✅" if done else "⏳"
         st.markdown(f"- {icon} **{label}**")
     st.markdown("</div>", unsafe_allow_html=True)
-    st.write(" ")
-    with st.expander("Analysis summary", expanded=True):
-        st.write("This animation represents a staged data pipeline where each step has been verified against compliance controls and bias assertions.")
-        st.write("The final results dashboard will include the complete risk score, protected class proxies, keyword issues, and recommendations.")
 
 
 def results_dashboard_page():
     render_top_navigation("Results Dashboard")
     top_metrics = st.columns(4, gap="large")
     stats = [
-        ("Overall risk score", "78/100", "Bias exposure suggests moderate review priority."),
-        ("Compliance score", "84%", "Aligned with current EEOC benchmarks."),
-        ("Critical findings", "3", "Items needing immediate policy review."),
-        ("Legal references", "12", "Guidance selected for this analysis."),
+        ("Overall risk score", "78/100", "Moderate priority review needed"),
+        ("Compliance score", "84%", "Aligned with EEOC benchmarks"),
+        ("Critical findings", "3", "Items requiring policy fixes"),
+        ("Legal references", "12", "Statutes checked in scan"),
     ]
     for index, info in enumerate(stats):
         with top_metrics[index]:
@@ -398,32 +496,31 @@ def results_dashboard_page():
     left, right = st.columns([2, 1], gap="large")
     with left:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-        st.markdown("<div class='section-title'>Overall risk gauge</div>")
-        st.markdown("<div style='height: 260px; display:flex; align-items:center; justify-content:center;'>"
-                    "<div style='width: 80%; height: 16px; background: #e2e8f0; border-radius: 999px; overflow:hidden;'>"
-                    "<div style='width: 78%; height: 100%; background: linear-gradient(90deg, #4b6cfa, #3c59d2);'></div>"
-                    "</div></div>")
-        st.markdown("<div style='display:flex; justify-content:space-between; color:#475569; font-size:0.95rem;'>"
-                    "<span>Low risk</span><span>Critical risk</span></div>", unsafe_allow_html=True)
+        st.markdown("<div class='section-title'>Overall risk status</div>", unsafe_allow_html=True)
+        st.markdown("<div style='height: 200px; display:flex; align-items:center; justify-content:center;'>"
+                    "<div style='width: 85%; height: 16px; background: rgba(116, 139, 197, 0.2); border-radius: 999px; overflow:hidden;'>"
+                    "<div style='width: 78%; height: 100%; background: rgb(116, 139, 197);'></div>"
+                    "</div></div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with right:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-        st.markdown("<div class='section-title'>Key summary</div>")
-        st.write("- Hiring funnel leakage is concentrated in early screening and scheduling requirements.")
-        st.write("- Legal risk is strongest for proxy language in interview availability and education filters.")
-        st.write("- Recommend immediate review of automated screening rules and scorecard requirements.")
+        st.markdown("<div class='section-title'>Key findings</div>", unsafe_allow_html=True)
+        st.write("- Screening leak concentrated in early availability rules.")
+        st.write("- Legal exposure identified for continuous career history proxies.")
+        st.write("- Immediate ATS scorecard re-configuration recommended.")
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with st.expander("Potential biases", expanded=True):
+    with st.expander("Potential biases detected", expanded=True):
         bias_tabs = st.columns(3, gap="large")
         bias_scores = [
-            ("Gender bias", "High", "Review hiring criteria for gendered language."),
-            ("Age bias", "Medium", "Assess job requirements that penalize older applicants."),
-            ("Education bias", "Low", "Replace prestige cues with skills-based criteria."),
+            ("Gender bias", "High", "Review criteria for gendered language."),
+            ("Age bias", "Medium", "Assess requirements penalizing career gaps."),
+            ("Education bias", "Low", "Replace prestige cues with skills tests."),
         ]
         for index, item in enumerate(bias_scores):
             with bias_tabs[index]:
-                st.markdown(f"<div class='card-compact'><div class='metric-title'>{item[0]}</div><div class='metric-value'>{item[1]}</div><div class='metric-note'>{item[2]}</div></div>", unsafe_allow_html=True)
+                render_summary_card(item[0], item[1], item[2])
+                
     with st.expander("Detected keywords", expanded=False):
         keywords = pd.DataFrame([
             {"Keyword": "On-site availability", "Count": 26, "Severity": "High"},
@@ -431,17 +528,6 @@ def results_dashboard_page():
             {"Keyword": "Parenting gap", "Count": 12, "Severity": "High"},
         ])
         st.table(keywords)
-    with st.expander("Statistical findings", expanded=False):
-        st.table(PROTECTED_CLASS_DATA)
-    with st.expander("Legal references", expanded=False):
-        for law in LEGAL_LIBRARY:
-            st.markdown(f"**{law['title']}** — {law['category']}<br><span style='color:#475569'>{law['summary']}</span><br><br>", unsafe_allow_html=True)
-    with st.expander("Recommendations", expanded=False):
-        st.markdown(
-            "- Remove operational language that evaluates candidate availability as a proxy for reliability.\n"
-            "- Replace prestige-based bias with objective performance criteria.\n"
-            "- Add audit triggers for protected-class distribution changes after each hiring batch."
-        )
 
 
 def detailed_finding_page():
@@ -449,21 +535,20 @@ def detailed_finding_page():
     title = st.selectbox("Choose flagged issue", [item["keyword"] for item in DETAILED_FINDINGS])
     issue = next(item for item in DETAILED_FINDINGS if item["keyword"] == title)
     st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown(f"<div class='section-title'>{issue['keyword']}</div>")
+    st.markdown(f"<div class='section-title'>{issue['keyword']}</div>", unsafe_allow_html=True)
     left, right = st.columns(2, gap="large")
     with left:
-        st.markdown(f"<div class='metric-title'>Frequency</div><div class='metric-value'>{issue['frequency']}</div>")
-        st.markdown(f"<div class='metric-title'>Accepted %</div><div class='metric-value'>{issue['accepted']}</div>")
-        st.markdown(f"<div class='metric-title'>Rejected %</div><div class='metric-value'>{issue['rejected']}</div>")
+        st.markdown(f"<div class='metric-title'>Frequency</div><div class='metric-value'>{issue['frequency']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='metric-title'>Accepted %</div><div class='metric-value'>{issue['accepted']}</div>", unsafe_allow_html=True)
     with right:
-        st.markdown(f"<div class='metric-title'>Confidence</div><div class='metric-value'>{issue['confidence']}</div>")
-        st.markdown(f"<div class='metric-title'>Category</div><div class='metric-value'>{issue['category']}</div>")
-    st.markdown("<hr style='border:none; border-top:1px solid rgba(148,163,184,0.18); margin:1rem 0;' />")
-    st.markdown(f"<div class='metric-title'>Explanation</div><div style='color:#475569'>{issue['explanation']}</div>")
-    st.markdown(f"<div class='metric-title' style='margin-top:1rem;'>Legal references</div>")
+        st.markdown(f"<div class='metric-title'>Confidence</div><div class='metric-value'>{issue['confidence']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='metric-title'>Category</div><div class='metric-value'>{issue['category']}</div>", unsafe_allow_html=True)
+    st.markdown("<hr style='border:none; border-top:1px solid rgba(116, 139, 197, 0.2); margin:1rem 0;' />", unsafe_allow_html=True)
+    st.markdown(f"**Explanation:** {issue['explanation']}")
+    st.markdown("**Legal references:**")
     for ref in issue["legal_refs"]:
         st.markdown(f"- {ref}")
-    st.markdown(f"<div class='metric-title' style='margin-top:1rem;'>Suggested replacement</div><div style='color:#475569'>{issue['suggestion']}</div>")
+    st.markdown(f"**Suggested fix:** {issue['suggestion']}")
     st.markdown("</div>", unsafe_allow_html=True)
 
 
@@ -471,23 +556,12 @@ def report_preview_page():
     render_top_navigation("Report Preview")
     top = st.columns([3, 1], gap="large")
     with top[0]:
-        render_section("Report preview", "Professional PDF layout with export controls")
+        render_section("Report preview", "PDF layout preview")
     with top[1]:
         st.button("Export PDF")
-        st.button("Email report")
-        st.button("Download")
 
     st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>Table of contents</div>")
-    st.write("1. Executive summary")
-    st.write("2. Risk and compliance scores")
-    st.write("3. Key findings")
-    st.write("4. Legal references")
-    st.write("5. Recommendations")
-    st.markdown("</div>", unsafe_allow_html=True)
-    st.write(" ")
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>Preview page: executive summary</div>")
+    st.markdown("<div class='section-title'>Executive Summary</div>", unsafe_allow_html=True)
     st.write("**Overall risk score:** 78/100")
     st.write("**Compliance score:** 84%")
     st.write("EquiAudit AI identified priority bias signals in candidate screening and keyword-based filtering.")
@@ -496,52 +570,27 @@ def report_preview_page():
 
 def legal_library_page():
     render_top_navigation("Legal Library")
-    search_term = st.text_input("Search legal references", placeholder="Search federal, state, EEOC, NIST, AI regulations")
-    selected_filters = st.multiselect("Filter by category", ["Federal", "State", "EEOC", "NIST", "AI Regulations"], default=["Federal", "EEOC", "NIST"])
-    filtered = [law for law in LEGAL_LIBRARY if (not search_term or search_term.lower() in law["title"].lower()) and (not selected_filters or law["category"] in selected_filters)]
-    if not filtered:
-        st.warning("No legal references match that search. Try a broader keyword.")
-        return
-    first = filtered[0]
-    left, right = st.columns([1, 2], gap="large")
-    with left:
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
-        for law in filtered:
-            st.markdown(f"### {law['title']}<br><span style='color:#64748b'>{law['summary']}</span><br><br>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-    with right:
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
-        st.markdown(f"<div class='section-title'>{first['title']}</div>")
-        st.write(first["details"])
-        st.markdown("</div>", unsafe_allow_html=True)
+    search_term = st.text_input("Search legal references", placeholder="Search federal, state, EEOC, NIST rules")
+    filtered = [law for law in LEGAL_LIBRARY if not search_term or search_term.lower() in law["title"].lower()]
+    for law in filtered:
+        st.markdown(
+            f"<div class='card'>"
+            f"<div class='section-title'>{law['title']} — <span style='color:{PRIMARY}; font-size:0.9rem;'>{law['category']}</span></div>"
+            f"<p style='margin-bottom:0.5rem;'>{law['summary']}</p>"
+            f"<small style='color:rgba(23,23,23,0.7);'>{law['details']}</small>"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
 
 
 def settings_page():
     render_top_navigation("Settings")
     st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>Workspace settings</div>")
+    st.markdown("<div class='section-title'>Workspace settings</div>", unsafe_allow_html=True)
     st.text_input("Workspace name", value=SETTINGS["workspace_name"])
     st.text_input("Primary notification email", value=SETTINGS["email"])
-    st.markdown("<div style='display:grid; gap: 1rem; margin-top: 1rem;'>", unsafe_allow_html=True)
     st.checkbox("Weekly summary emails", value=SETTINGS["notifications"]["weekly_summary"])
     st.checkbox("Report ready alerts", value=SETTINGS["notifications"]["report_ready"])
-    st.checkbox("Policy alert notifications", value=SETTINGS["notifications"]["policy_alerts"])
-    st.markdown("</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.write(" ")
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>Report branding</div>")
-    st.text_input("Brand accent color", value=SETTINGS["branding"]["accent_color"])
-    st.text_input("Report header text", value=SETTINGS["branding"]["report_header"])
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.write(" ")
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-title'>Default analysis settings</div>")
-    st.selectbox("Review scope", ["All departments", "Customer support", "Engineering", "Sales"], index=0)
-    st.select_slider("Confidence threshold", options=["70%", "75%", "80%", "85%", "90%", "95%"], value=SETTINGS["analysis_defaults"]["confidence_threshold"])
-    st.checkbox("Include legal references by default", value=SETTINGS["analysis_defaults"]["include_legal_references"])
     st.markdown("</div>", unsafe_allow_html=True)
 
 
