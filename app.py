@@ -9,6 +9,56 @@ from datetime import datetime
 
 st.set_page_config(page_title="EquiAudit AI", page_icon="⚖️", layout="wide")
 
+
+# -----------------------------------------------------------------------------
+# EXACT BRAND COLOR INJECTION (RGB / HEX)
+# -----------------------------------------------------------------------------
+st.markdown(
+    """
+    <style>
+        /* Background Color: rgb(255, 241, 249) */
+        [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+            background-color: #FFF1F9 !important;
+        }
+
+        /* Sidebar Container (White) */
+        [data-testid="stSidebar"] {
+            background-color: #FFFFFF !important;
+            border-right: 1px solid rgba(116, 139, 197, 0.2) !important;
+        }
+
+        /* Main Text Color: rgb(23, 23, 23) */
+        html, body, [class*="css"], p, span, div, label, h1, h2, h3 {
+            color: #171717 !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        /* Primary Button Color: rgb(116, 139, 197) */
+        .stButton > button {
+            background-color: #748BC5 !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 0.5rem 1.25rem !important;
+            transition: all 0.2s ease !important;
+        }
+
+        /* Button Hover State: rgb(241, 141, 122) */
+        .stButton > button:hover {
+            background-color: #F18D7A !important;
+            transform: translateY(-1px);
+        }
+
+        /* Input Cards and Dropdowns */
+        .stSelectbox, .stTextInput, .stFileUploader {
+            background-color: #FFFFFF !important;
+            border-radius: 8px !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 # -----------------------------------------------------------------------------
 # EXACT BRAND COLOR PALETTE (RGB)
 # -----------------------------------------------------------------------------
