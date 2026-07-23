@@ -8,6 +8,7 @@ from datetime import datetime
 
 
 st.set_page_config(page_title="EquiAudit AI", page_icon="⚖️", layout="wide")
+st.error("🔴 DEPLOYMENT TEST: IF YOU SEE THIS, GIT IS WORKING!")
 
 
 # -----------------------------------------------------------------------------
