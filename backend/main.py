@@ -11,7 +11,7 @@ app = FastAPI(title="EquiAudit AI Backend")
 # Enable CORS for Next.js frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Update with your Vercel URL in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,7 +30,6 @@ async def run_audit(
         contents = await file.read()
         df = pd.read_csv(io.BytesIO(contents))
         
-        # Run math engine & Llama agent
         metrics = calculate_funnel_bias(df)
         report = generate_compliance_prose(metrics, target_ats)
         
