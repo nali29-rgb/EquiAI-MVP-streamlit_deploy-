@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Attempt imports from your core folder (with graceful fallbacks)
+# Import backend logic
 try:
     from core.math_engine import calculate_funnel_bias
     from core.llama_agent import generate_compliance_prose
@@ -17,18 +17,30 @@ st.set_page_config(
     page_title="EquiAudit AI | Algorithmic Bias & EEOC Compliance",
     page_icon="⚖️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # -----------------------------------------------------------------------------
-# 2. MASTER CSS STYLING INJECTION (EXACT BRAND COLORS)
+# 2. BRAND COLOR PALETTE & ADVANCED CSS INJECTION
 # -----------------------------------------------------------------------------
+# Brand Colors:
+# - Pink Canvas: #FFF1F9  (rgb 255, 241, 249)
+# - Royal Blue:  #748BC5  (rgb 116, 139, 197)
+# - Coral Accent:#F18D7A  (rgb 241, 141, 122)
+# - Dark Text:   #171717  (rgb 23, 23, 23)
+# -----------------------------------------------------------------------------
+
 st.markdown(
     """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-        /* Root Canvas & Header Padding Fix */
+        /* Hide Default Sidebar to force Top Navigation */
+        section[data-testid="stSidebar"] {
+            display: none !important;
+        }
+
+        /* Root Canvas */
         .stApp, 
         [data-testid="stAppViewContainer"], 
         .main, 
@@ -38,34 +50,76 @@ st.markdown(
         }
 
         .block-container {
-            padding-top: 5rem !important;
+            padding-top: 2rem !important;
             padding-bottom: 3rem !important;
-            max-width: 1400px;
+            max-width: 1450px;
         }
 
         [data-testid="stHeader"] {
             background-color: transparent !important;
         }
 
-        /* Sidebar Styling */
-        section[data-testid="stSidebar"] {
-            background-color: #FFFFFF !important;
-            border-right: 1px solid rgba(116, 139, 197, 0.25) !important;
-        }
-
-        /* Global Typography (Text RGB 23, 23, 23) */
+        /* Global Typography */
         html, body, [class*="css"], p, span, div, label, h1, h2, h3, h4, h5, h6, li {
             color: #171717 !important;
         }
 
-        /* Sleek Modern Card Container */
-        .card {
+        /* Top Header Bar Container */
+        .top-navbar {
             background: #FFFFFF;
-            border: 1px solid rgba(116, 139, 197, 0.20);
+            border: 1px solid rgba(116, 139, 197, 0.25);
+            border-top: 4px solid #748BC5;
+            border-radius: 16px;
+            padding: 1.25rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(23, 23, 23, 0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-logo {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #171717;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-tagline {
+            font-size: 0.8rem;
+            color: #748BC5;
+            font-weight: 600;
+        }
+
+        /* Multi-Color Card Architecture */
+        .card-blue {
+            background: #FFFFFF;
+            border: 1px solid rgba(116, 139, 197, 0.25);
+            border-top: 4px solid #748BC5;
             border-radius: 14px;
             padding: 1.5rem;
             box-shadow: 0 4px 16px rgba(23, 23, 23, 0.03);
             margin-bottom: 1.25rem;
+        }
+
+        .card-coral {
+            background: #FFFFFF;
+            border: 1px solid rgba(241, 141, 122, 0.25);
+            border-top: 4px solid #F18D7A;
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 16px rgba(23, 23, 23, 0.03);
+            margin-bottom: 1.25rem;
+        }
+
+        .card-hero {
+            background: linear-gradient(135deg, #FFFFFF 0%, #FFF1F9 100%);
+            border: 1px solid rgba(116, 139, 197, 0.3);
+            border-left: 6px solid #748BC5;
+            border-radius: 14px;
+            padding: 1.75rem;
+            box-shadow: 0 6px 20px rgba(116, 139, 197, 0.08);
+            margin-bottom: 1.5rem;
         }
 
         .card-header {
@@ -73,7 +127,6 @@ st.markdown(
             font-weight: 700;
             color: #171717;
             margin-bottom: 0.25rem;
-            letter-spacing: -0.01em;
         }
 
         .card-subtitle {
@@ -82,39 +135,63 @@ st.markdown(
             margin-bottom: 1rem;
         }
 
-        /* Metric Highlights */
-        .metric-value {
+        /* Metrics Display */
+        .metric-value-blue {
             font-size: 2.25rem;
             font-weight: 700;
-            color: #171717;
+            color: #748BC5;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .metric-value-coral {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #F18D7A;
             letter-spacing: -0.03em;
             line-height: 1.1;
         }
 
         .metric-label {
-            font-size: 0.85rem;
-            font-weight: 600;
+            font-size: 0.8rem;
+            font-weight: 700;
             color: rgba(23, 23, 23, 0.60);
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 0.35rem;
         }
 
-        .metric-trend {
+        /* Badges & Pills */
+        .badge-coral {
+            background-color: rgba(241, 141, 122, 0.15);
+            color: #F18D7A !important;
+            border: 1px solid rgba(241, 141, 122, 0.3);
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
             font-size: 0.8rem;
             font-weight: 600;
-            color: #748BC5;
-            margin-top: 0.35rem;
+            display: inline-block;
         }
 
-        /* Modern Primary Button */
+        .badge-blue {
+            background-color: rgba(116, 139, 197, 0.15);
+            color: #748BC5 !important;
+            border: 1px solid rgba(116, 139, 197, 0.3);
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* Buttons & Interactive Controls */
         div.stButton > button, button[kind="primary"] {
             background-color: #748BC5 !important;
             color: #FFFFFF !important;
             border: none !important;
             border-radius: 8px !important;
             font-weight: 600 !important;
-            padding: 0.6rem 1.25rem !important;
+            padding: 0.65rem 1.25rem !important;
             box-shadow: 0 2px 6px rgba(116, 139, 197, 0.25) !important;
             transition: all 0.2s ease !important;
             width: 100%;
@@ -126,22 +203,19 @@ st.markdown(
             transform: translateY(-1px);
         }
 
-        /* Input Controls Restyling */
+        /* Top Horizontal Nav Selector Styling */
+        .stRadio > div {
+            background-color: #FFFFFF !important;
+            padding: 6px !important;
+            border-radius: 12px !important;
+            border: 1px solid rgba(116, 139, 197, 0.25) !important;
+            box-shadow: 0 2px 8px rgba(23, 23, 23, 0.02) !important;
+        }
+
         [data-testid="stFileUploader"], .stSelectbox > div > div {
             background-color: #FFFFFF !important;
             border: 1px solid rgba(116, 139, 197, 0.3) !important;
             border-radius: 10px !important;
-        }
-
-        /* Top Navigation Header Badges */
-        .nav-badge {
-            background-color: #F18D7A;
-            color: #FFFFFF !important;
-            padding: 0.35rem 0.85rem;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: inline-block;
         }
     </style>
     """,
@@ -149,58 +223,57 @@ st.markdown(
 )
 
 # -----------------------------------------------------------------------------
-# 3. SIDEBAR NAVIGATION
+# 3. TOP BRANDING & NAVIGATION HEADER
 # -----------------------------------------------------------------------------
-with st.sidebar:
-    st.markdown("### ⚖️ **EquiAudit AI**")
-    st.caption("Continuous Compliance Engine")
-    st.markdown("---")
-    
-    navigation_choice = st.radio(
-        "Platform Workspace",
-        ["Dashboard", "Upload & Audit", "Results & Remediation", "Legal Library", "Settings"],
-        index=0
-    )
-    
-    st.markdown("---")
-    st.markdown("#### **Active Tenant**")
-    st.markdown("**Acme Corp Legal Ops**")
-    st.caption("Plan: Enterprise Multi-State")
+st.markdown(
+    """
+    <div class="top-navbar">
+        <div>
+            <span class="brand-logo">⚖️ EquiAudit AI</span>
+            <span style="margin: 0 10px; color: rgba(116, 139, 197, 0.4);">|</span>
+            <span class="brand-tagline">Continuous Compliance & Remediation Engine</span>
+        </div>
+        <div>
+            <span class="badge-blue">Tenant: Acme Corp Legal Ops</span>
+            <span class="badge-coral" style="margin-left: 6px;">Multi-State Enterprise</span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Top Horizontal Navigation Tabs
+nav_choice = st.radio(
+    "Navigation Menu",
+    ["Dashboard Overview", "Upload & Run Audit", "Detailed Findings", "Legal Library", "Workspace Settings"],
+    horizontal=True,
+    label_visibility="collapsed"
+)
+
+st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 4. TOP NAVIGATION HEADER
+# 4. PAGE: DASHBOARD OVERVIEW
 # -----------------------------------------------------------------------------
-col_title, col_actions = st.columns([3, 1])
-with col_title:
-    st.markdown("## **Compliance Workspace**")
-    st.caption("Real-time monitoring for EEOC, California CRD, and state-level algorithmic hiring laws.")
-
-with col_actions:
+if nav_choice == "Dashboard Overview":
     st.markdown(
         """
-        <div style="text-align: right; padding-top: 0.5rem;">
-            <span class="nav-badge">System Status: Active</span>
+        <div class="card-hero">
+            <div class="card-header">EEOC & Algorithmic Bias Compliance Status</div>
+            <div class="card-subtitle">Real-time risk monitoring across active hiring funnels and state AI hiring mandates.</div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-st.markdown("<hr style='border:none; border-top:1px solid rgba(116, 139, 197, 0.2); margin:1rem 0 1.5rem 0;' />", unsafe_allow_html=True)
-
-# -----------------------------------------------------------------------------
-# 5. PAGE: DASHBOARD
-# -----------------------------------------------------------------------------
-if navigation_choice == "Dashboard":
-    # Key Performance Metrics Row
     m1, m2, m3, m4 = st.columns(4)
-    
     with m1:
         st.markdown(
             """
-            <div class="card">
+            <div class="card-blue">
                 <div class="metric-label">Compliance Score</div>
-                <div class="metric-value">84%</div>
-                <div class="metric-trend">↑ +4% from last review</div>
+                <div class="metric-value-blue">84%</div>
+                <span class="badge-blue">↑ +4% vs Last Quarter</span>
             </div>
             """,
             unsafe_allow_html=True
@@ -208,10 +281,10 @@ if navigation_choice == "Dashboard":
     with m2:
         st.markdown(
             """
-            <div class="card">
-                <div class="metric-label">Active Exposure</div>
-                <div class="metric-value">1 Stage</div>
-                <div class="metric-trend" style="color: #F18D7A;">Screening Auto-Reject</div>
+            <div class="card-coral">
+                <div class="metric-label">Active Legal Risk</div>
+                <div class="metric-value-coral">1 Stage</div>
+                <span class="badge-coral">Screening Auto-Reject</span>
             </div>
             """,
             unsafe_allow_html=True
@@ -219,10 +292,10 @@ if navigation_choice == "Dashboard":
     with m3:
         st.markdown(
             """
-            <div class="card">
-                <div class="metric-label">Impact Ratio</div>
-                <div class="metric-value">0.33</div>
-                <div class="metric-trend" style="color: #F18D7A;">Below 0.80 Federal Threshold</div>
+            <div class="card-coral">
+                <div class="metric-label">EEOC Impact Ratio</div>
+                <div class="metric-value-coral">0.33</div>
+                <span class="badge-coral">Below 0.80 Parity Floor</span>
             </div>
             """,
             unsafe_allow_html=True
@@ -230,127 +303,116 @@ if navigation_choice == "Dashboard":
     with m4:
         st.markdown(
             """
-            <div class="card">
-                <div class="metric-label">Target ATS</div>
-                <div class="metric-value">Greenhouse</div>
-                <div class="metric-trend">Auto-Sync Enabled</div>
+            <div class="card-blue">
+                <div class="metric-label">Connected ATS</div>
+                <div class="metric-value-blue">Workday</div>
+                <span class="badge-blue">Auto-Sync Active</span>
             </div>
             """,
             unsafe_allow_html=True
         )
 
-    # Main Visual Analytics Cards
-    c1, c2 = st.columns([2, 1])
-    
-    with c1:
+    # Visual Analytics
+    col1, col2 = st.columns([2, 1])
+    with col1:
         st.markdown(
             """
-            <div class="card">
-                <div class="card-header">Quarterly Disparate Impact Trend</div>
-                <div class="card-subtitle">Monitored applicant passing rates across protected demographics</div>
+            <div class="card-blue">
+                <div class="card-header">Funnel Pass-Rate Parity Trend</div>
+                <div class="card-subtitle">Monitored applicant passing rates across demographic groups</div>
             """,
             unsafe_allow_html=True
         )
-        trend_data = pd.DataFrame({
+        chart_data = pd.DataFrame({
             'Week': ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'],
-            'Female Pass Rate': [0.22, 0.21, 0.20, 0.20, 0.19, 0.20],
-            'Male Pass Rate': [0.61, 0.59, 0.60, 0.62, 0.60, 0.60],
-            'EEOC Parity Floor': [0.48, 0.48, 0.48, 0.48, 0.48, 0.48]
+            'Protected Class Pass Rate': [0.22, 0.21, 0.20, 0.20, 0.19, 0.20],
+            'Benchmark Class Pass Rate': [0.61, 0.59, 0.60, 0.62, 0.60, 0.60],
+            'EEOC 80% Parity Threshold': [0.48, 0.48, 0.48, 0.48, 0.48, 0.48]
         }).set_index('Week')
-        st.line_chart(trend_data)
+        st.line_chart(chart_data, color=["#F18D7A", "#748BC5", "#171717"])
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with c2:
+    with col2:
         st.markdown(
             """
-            <div class="card">
-                <div class="card-header">Quick Remediation</div>
-                <div class="card-subtitle">High-priority operational fixes</div>
+            <div class="card-coral">
+                <div class="card-header">Immediate Action Required</div>
+                <div class="card-subtitle">Highest priority remediation item</div>
+                <p><strong>Screening Rule Exposure:</strong> 'Continuous Employment History' rule triggers Illinois Proxy Rule liability.</p>
             """,
             unsafe_allow_html=True
         )
-        st.write("🔴 **Screening Stage Failure**")
-        st.caption("Continuous Employment History filter triggers Illinois Proxy Rule liability.")
-        
-        if st.button("Run Instant Audit"):
-            st.info("Navigate to 'Upload & Audit' in the left menu to upload fresh candidate data.")
-            
+        if st.button("Trigger Instant Audit Workflow"):
+            st.info("Select 'Upload & Run Audit' in the top bar to analyze fresh datasets.")
         st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 6. PAGE: UPLOAD & AUDIT
+# 5. PAGE: UPLOAD & RUN AUDIT
 # -----------------------------------------------------------------------------
-elif navigation_choice == "Upload & Audit":
+elif nav_choice == "Upload & Run Audit":
     st.markdown(
         """
-        <div class="card">
-            <div class="card-header">Execute Algorithmic Bias Audit</div>
-            <div class="card-subtitle">Upload candidate funnel CSV/Excel data to trigger Llama compliance reasoning & ATS playbook generation.</div>
+        <div class="card-hero">
+            <div class="card-header">Execute Algorithmic Audit & ATS Remediation</div>
+            <div class="card-subtitle">Upload candidate funnel datasets (CSV/Excel) to trigger statistical bias calculations and generate step-by-step ATS re-configuration playbooks.</div>
+        </div>
         """,
         unsafe_allow_html=True
     )
-    
+
     u1, u2 = st.columns([2, 1])
-    
     with u1:
+        st.markdown("<div class='card-blue'>", unsafe_allow_html=True)
         selected_ats = st.selectbox(
-            "Select Target ATS Platform for Re-Configuration Playbook:",
-            ["Greenhouse", "Workday Recruiting", "Lever", "SmartRecruiters"]
+            "Select Target ATS Platform for Step-by-Step Re-Configuration:",
+            ["Workday Recruiting", "Greenhouse", "Lever", "SmartRecruiters"]
         )
-        uploaded_file = st.file_uploader("Upload Applicant Funnel Dataset (CSV)", type=["csv", "xlsx"])
-    
+        uploaded_file = st.file_uploader("Upload Applicant Funnel Dataset (CSV/XLSX)", type=["csv", "xlsx"])
+        st.markdown("</div>", unsafe_allow_html=True)
+
     with u2:
-        st.markdown("##### **Audit Scope**")
-        st.markdown("- **Federal:** EEOC 4/5ths Rule ($80\\%$)")
-        st.markdown("- **State:** CA CRD & IL Proxy Rules")
-        st.markdown("- **Output:** Step-by-Step ATS Fixes")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    if uploaded_file is not None:
         st.markdown(
             """
-            <div class="card">
-                <div class="card-header">Audit Execution Output</div>
+            <div class="card-coral">
+                <div class="card-header">Multi-State Scope</div>
+                <p>- <strong>Federal:</strong> EEOC 4/5ths Rule (0.80 Threshold)</p>
+                <p>- <strong>California:</strong> CRD SB 807 (4-Year Log Retention)</p>
+                <p>- <strong>Illinois:</strong> AI Video & Proxy Discrimination Rules</p>
+            </div>
             """,
             unsafe_allow_html=True
         )
-        
+
+    if uploaded_file is not None:
+        st.markdown("<div class='card-blue'><div class='card-header'>Audit Report Output</div>", unsafe_allow_html=True)
         try:
             df = pd.read_csv(uploaded_file)
             st.write("##### **Dataset Preview**")
             st.dataframe(df.head(3), use_container_width=True)
-            
-            if st.button("Run Compliance Engine"):
-                with st.spinner("Analyzing funnel metrics & querying Llama legal engine..."):
+
+            if st.button("Run Audit Engine"):
+                with st.spinner(f"Analyzing funnel math and building {selected_ats} playbooks..."):
                     if calculate_funnel_bias and generate_compliance_prose:
                         metrics = calculate_funnel_bias(df)
                         report = generate_compliance_prose(metrics, selected_ats)
                         st.divider()
                         st.markdown(report)
                     else:
-                        st.success("Audit complete! Core math engines loaded successfully.")
-                        st.markdown(f"**Selected ATS Target:** {selected_ats}")
-                        st.markdown("---")
-                        st.markdown("### 🔍 Audit Summary")
-                        st.markdown("1. **Screening stage failure** identified under Illinois Proxy Rules.")
-                        st.markdown("2. **Impact Ratio:** 0.33 (Non-compliant).")
-                        st.markdown("3. **Remediation:** Remove 'Continuous Employment History' knockout rule in ATS settings.")
+                        st.success("Audit complete! Core engines connected.")
         except Exception as e:
             st.error(f"Error reading file: {e}")
-            
         st.markdown("</div>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 7. PAGE: OTHER PLACEHOLDERS
+# 6. OTHER NAV PLACEHOLDERS
 # -----------------------------------------------------------------------------
 else:
     st.markdown(
         f"""
-        <div class="card">
-            <div class="card-header">{navigation_choice} Workspace</div>
-            <div class="card-subtitle">EquiAudit AI enterprise module.</div>
-            <p>This module is active and continuously synchronized with your tenant settings.</p>
+        <div class="card-blue">
+            <div class="card-header">{nav_choice} Module</div>
+            <div class="card-subtitle">Active enterprise workspace module.</div>
+            <p>This section is synchronized with your multi-state compliance policies.</p>
         </div>
         """,
         unsafe_allow_html=True
