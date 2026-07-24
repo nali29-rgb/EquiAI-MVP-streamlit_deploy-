@@ -42,20 +42,32 @@ function EquiAuditLogo() {
   );
 }
 
-// Safe Text Sanitizer: Removes Markdown & Emojis
-const cleanText = (str: string): string => {
+// Safe Text Sanitizer: Removes Markdown, Emojis, Dashed Lines & Replaces Generic ATS terms
+const cleanText = (str: string, atsName?: string): string => {
   if (!str) return "";
-  return str
+  let cleaned = str
     .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
     .replace(/\*\*(.*?)\*\*/g, "$1")
     .replace(/\*(.*?)\*/g, "$1")
     .replace(/`(.*?)`/g, "$1")
     .replace(/^#+\s*/, "")
+    .replace(/^[-_]{2,}\s*$/g, "") // Strip standalone dashed lines like -- or ---
     .trim();
+
+  // Dynamically replace generic "Target ATS Platform" strings with the selected ATS
+  if (atsName) {
+    cleaned = cleaned
+      .replace(/the target ats platform/gi, `the ${atsName} platform`)
+      .replace(/target ats platform/gi, `${atsName} platform`)
+      .replace(/the target ats/gi, atsName)
+      .replace(/target ats/gi, atsName);
+  }
+
+  return cleaned;
 };
 
-// Executive Renderer with High-Impact Font Sizing
-function ExecutiveTextRenderer({ text }: { text: string }) {
+// Executive Renderer with High-Impact Font Sizing & Artifact Filtering
+function ExecutiveTextRenderer({ text, atsName }: { text: string; atsName: string }) {
   if (!text) return null;
   const lines = text.split("\n");
 
@@ -63,22 +75,29 @@ function ExecutiveTextRenderer({ text }: { text: string }) {
     <div className="space-y-4 font-sans text-slate-800 text-base leading-relaxed">
       {lines.map((line, idx) => {
         const trimmed = line.trim();
-        if (!trimmed) return null;
+        
+        // Skip empty lines or horizontal rules like --, ---, ___
+        if (!trimmed || /^[-_]{2,}$/.test(trimmed)) return null;
+
+        const processedText = cleanText(trimmed, atsName);
+        if (!processedText) return null;
 
         if (trimmed.startsWith("#")) {
           return (
             <h4 key={idx} className="text-lg font-extrabold text-slate-900 mt-5 mb-2 pb-1.5 border-b border-slate-200 flex items-center gap-2">
               <ChevronRight className="w-5 h-5 text-brand-blue shrink-0" />
-              {cleanText(trimmed)}
+              {processedText}
             </h4>
           );
         }
 
         if (trimmed.startsWith("-") || trimmed.startsWith("*")) {
+          const bulletContent = cleanText(trimmed.replace(/^[-*]\s*/, ""), atsName);
+          if (!bulletContent) return null;
           return (
             <div key={idx} className="flex items-start gap-3 my-2 pl-1">
               <div className="w-2 h-2 rounded-full bg-brand-blue mt-2 shrink-0" />
-              <p className="text-base text-slate-700 leading-relaxed font-medium">{cleanText(trimmed.replace(/^[-*]\s*/, ""))}</p>
+              <p className="text-base text-slate-700 leading-relaxed font-medium">{bulletContent}</p>
             </div>
           );
         }
@@ -91,14 +110,14 @@ function ExecutiveTextRenderer({ text }: { text: string }) {
               <span className="text-xs font-black text-brand-blue bg-brand-canvas px-2 py-0.5 rounded-md border border-brand-blue/20 shrink-0 mt-0.5">
                 {num}
               </span>
-              <p className="text-base text-slate-700 leading-relaxed font-medium">{cleanText(rest)}</p>
+              <p className="text-base text-slate-700 leading-relaxed font-medium">{cleanText(rest, atsName)}</p>
             </div>
           );
         }
 
         return (
           <p key={idx} className="text-base text-slate-700 leading-relaxed">
-            {cleanText(trimmed)}
+            {processedText}
           </p>
         );
       })}
@@ -200,32 +219,35 @@ export default function App() {
   ];
 
   // Parser: Separates Protocol Note and builds 2-column square cards
-  const parseReport = (text: string) => {
+  const parseReport = (text: string, currentAts: string) => {
     if (!text) return { protocolNote: null, cards: [] };
+
+    // Clean trailing dashes or separators at the end of the raw output
+    const cleanRawText = text.replace(/[\r\n\s]*[-_]{2,}[\r\n\s]*$/g, "").trim();
 
     let protocolNote: string | null = null;
     const cards: DynamicCard[] = [];
 
-    const rawSections = text.split(/(?=^#{1,3}\s)/m).filter(s => s.trim().length > 0);
+    const rawSections = cleanRawText.split(/(?=^#{1,3}\s)/m).filter(s => s.trim().length > 0);
 
     rawSections.forEach((sec) => {
       const lines = sec.trim().split("\n");
       const rawTitle = lines[0] || "";
-      const cleanedTitle = cleanText(rawTitle);
+      const cleanedTitle = cleanText(rawTitle, currentAts);
       const body = lines.slice(1).join("\n").trim();
 
       if (
         cleanedTitle.toLowerCase().includes("audit protocol note") || 
         sec.toLowerCase().includes("audit protocol note")
       ) {
-        const fullNote = cleanText(sec);
+        const fullNote = cleanText(sec, currentAts);
         protocolNote = fullNote.replace(/^audit protocol note:?/i, "").trim();
       } else {
         const cardIndex = cards.length;
-        const conciseTitle = CONCISE_TITLES[cardIndex] || cleanText(cleanedTitle).slice(0, 25);
+        const conciseTitle = CONCISE_TITLES[cardIndex] || cleanText(cleanedTitle, currentAts).slice(0, 25);
         
         // Extract a strong headline snippet for immediate visual pop
-        const previewSnippet = cleanText(body || sec).slice(0, 140);
+        const previewSnippet = cleanText(body || sec, currentAts).slice(0, 140);
 
         cards.push({
           id: `module-${cardIndex + 1}`,
@@ -240,7 +262,7 @@ export default function App() {
     return { protocolNote, cards };
   };
 
-  const { protocolNote, cards } = parseReport(rawReport || "");
+  const { protocolNote, cards } = parseReport(rawReport || "", selectedAts);
 
   if (!isMounted) return null;
 
@@ -517,7 +539,7 @@ export default function App() {
             </div>
 
             <div className="bg-slate-50/80 p-6 rounded-2xl border border-slate-200 max-h-[60vh] overflow-y-auto">
-              <ExecutiveTextRenderer text={activeModal.content} />
+              <ExecutiveTextRenderer text={activeModal.content} atsName={selectedAts} />
             </div>
 
             <div className="flex justify-end pt-2">
