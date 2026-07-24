@@ -5,7 +5,6 @@ import {
   ShieldCheck, 
   AlertTriangle, 
   Upload, 
-  FileText, 
   ArrowUpRight, 
   Loader2,
   X,
@@ -14,11 +13,10 @@ import {
   ChevronRight
 } from "lucide-react";
 
-// Clean Sanitizer Component: Strips Markdown and renders executive UI
-function ExecutiveTextRenderer({ text }: { text: string }) {
+// Clean Text Renderer: Strips all raw Markdown syntax (*, #, `)
+function CleanTextRenderer({ text }: { text: string }) {
   if (!text) return null;
 
-  // Strips **bold**, *italic*, `code`, and # symbols completely
   const sanitize = (str: string) => {
     return str
       .replace(/\*\*(.*?)\*\*/g, "$1")
@@ -36,27 +34,24 @@ function ExecutiveTextRenderer({ text }: { text: string }) {
         const trimmed = line.trim();
         if (!trimmed) return null;
 
-        // Headings (# or ##) -> Render as crisp Section Subheaders
         if (trimmed.startsWith("#")) {
           return (
-            <h4 key={idx} className="text-sm font-bold text-slate-900 mt-4 mb-2 pb-1 border-b border-slate-200/80 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-blue" />
+            <h4 key={idx} className="text-sm font-bold text-slate-900 mt-4 mb-2 pb-1 border-b border-slate-200 flex items-center gap-2">
+              <ChevronRight className="w-4 h-4 text-brand-blue" />
               {sanitize(trimmed)}
             </h4>
           );
         }
 
-        // Bullet lists (- or *) -> Render with styled bullet indicators
         if (trimmed.startsWith("-") || trimmed.startsWith("*")) {
           return (
             <div key={idx} className="flex items-start gap-2.5 my-1.5 pl-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-brand-blue/70 mt-2 shrink-0" />
+              <div className="w-1.5 h-1.5 rounded-full bg-brand-blue mt-2 shrink-0" />
               <p className="text-xs text-slate-700 leading-normal">{sanitize(trimmed.replace(/^[-*]\s*/, ""))}</p>
             </div>
           );
         }
 
-        // Numbered lists (1. 2.) -> Render with custom badge pills
         if (/^\d+\./.test(trimmed)) {
           const num = trimmed.match(/^\d+/)?.[0];
           const rest = trimmed.replace(/^\d+\.\s*/, "");
@@ -70,7 +65,6 @@ function ExecutiveTextRenderer({ text }: { text: string }) {
           );
         }
 
-        // Standard Paragraphs -> Clean text
         return (
           <p key={idx} className="text-xs text-slate-600 leading-relaxed">
             {sanitize(trimmed)}
@@ -81,13 +75,11 @@ function ExecutiveTextRenderer({ text }: { text: string }) {
   );
 }
 
-interface AuditSection {
+interface DynamicCard {
   id: string;
   title: string;
   category: string;
   summary: string;
-  badge: string;
-  badgeColor: string;
   content: string;
 }
 
@@ -95,17 +87,15 @@ export default function App() {
   const [selectedAts, setSelectedAts] = useState("Workday Recruiting");
   const [activeTab, setActiveTab] = useState("dashboard");
   
-  // API & Audit States
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [rawReport, setRawReport] = useState<string | null>(null);
-  const [activeModal, setActiveModal] = useState<AuditSection | null>(null);
+  const [activeModal, setActiveModal] = useState<DynamicCard | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Trigger Audit Backend
   const handleRunAudit = async () => {
     if (!file) {
-      alert("Please upload a CSV candidate dataset first.");
+      alert("Please upload a CSV dataset first.");
       return;
     }
 
@@ -130,69 +120,52 @@ export default function App() {
       if (data.success) {
         setRawReport(data.report);
       } else {
-        setError(data.error || "An error occurred during execution.");
+        setError(data.error || "Execution error.");
       }
     } catch (err) {
       console.error("API Error:", err);
-      setError("Backend waking up or unreachable. Please try again in a few seconds.");
+      setError("Backend server waking up or offline. Please retry in a few seconds.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Helper to parse raw API report into 4 clean cards
-  const getAuditSections = (): AuditSection[] => {
-    if (!rawReport) return [];
+  // DYNAMIC PARSER: Automatically splits Llama output by headers into cards
+  const parseReportToCards = (text: string): DynamicCard[] => {
+    if (!text) return [];
 
-    // Clean Markdown tags out of raw summary preview text
-    const cleanPreview = (str: string) => str.replace(/[*#`]/g, "").trim();
+    const rawSections = text.split(/(?=^#{1,3}\s)/m).filter(s => s.trim().length > 0);
 
-    // Split report by double linebreaks or headers
-    const chunks = rawReport.split(/\n(?=#|\n)/).filter(c => c.trim().length > 0);
+    if (rawSections.length === 0) {
+      return [{
+        id: "sec-0",
+        title: "Compliance Findings",
+        category: "Audit Analysis",
+        summary: text.replace(/[*#`]/g, "").slice(0, 120) + "...",
+        content: text
+      }];
+    }
 
-    return [
-      {
-        id: "summary",
-        title: "Executive Compliance Summary",
-        category: "High-Level Risk",
-        summary: cleanPreview(chunks[0] || "Audit review of continuous employment screening policies and disparate impact exposures."),
-        badge: "Critical Exposure",
-        badgeColor: "bg-brand-coral/10 text-brand-coral border-brand-coral/20",
-        content: chunks[0] || rawReport
-      },
-      {
-        id: "eeoc",
-        title: "EEOC & Disparate Impact Math",
-        category: "Federal Standard",
-        summary: cleanPreview(chunks[1] || "Statistical calculation under the 4/5ths Rule across protected applicant classes."),
-        badge: "Impact Ratio: 0.33",
-        badgeColor: "bg-amber-50 text-amber-700 border-amber-200",
-        content: chunks[1] || "Calculated Impact Ratio: 0.33. This falls below the 0.80 Federal Parity floor, triggering EEOC audit risk."
-      },
-      {
-        id: "ats",
-        title: `${selectedAts} Step-by-Step Playbook`,
-        category: "ATS Remediation",
-        summary: cleanPreview(chunks[2] || `Step-by-step re-configuration guide for automated screening rules inside ${selectedAts}.`),
-        badge: "Action Required",
-        badgeColor: "bg-brand-blue/10 text-brand-blue border-brand-blue/20",
-        content: chunks[2] || `1. Access your ${selectedAts} Admin Dashboard.\n2. Navigate to Screening Filters.\n3. Convert auto-reject knockout rule to an informational scorecard metric.`
-      },
-      {
-        id: "retention",
-        title: "CRD & Data Retention Mandate",
-        category: "State Law Compliance",
-        summary: cleanPreview(chunks[3] || "Mandatory audit log export and recordkeeping rules under California SB 807."),
-        badge: "4-Year Recordkeeping",
-        badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
-        content: chunks[3] || "Under California CRD regulations and SB 807, all algorithmic scoring parameter changes and candidate evaluation logs must be securely retained for 4 years."
-      }
-    ];
+    return rawSections.map((sec, idx) => {
+      const lines = sec.trim().split("\n");
+      const rawTitle = lines[0] || `Section ${idx + 1}`;
+      const cleanTitle = rawTitle.replace(/^#+\s*/, "").replace(/\*\*/g, "").trim();
+      const body = lines.slice(1).join("\n").trim();
+      const cleanSummary = (body || sec).replace(/[*#`]/g, "").slice(0, 110) + "...";
+
+      return {
+        id: `sec-${idx}`,
+        title: cleanTitle || `Compliance Finding ${idx + 1}`,
+        category: `Module 0${idx + 1}`,
+        summary: cleanSummary,
+        content: body || sec
+      };
+    });
   };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased">
-      {/* SaaS Top Header */}
+      {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -202,7 +175,7 @@ export default function App() {
             <div>
               <span className="font-bold text-base tracking-tight text-slate-900">EquiAudit AI</span>
               <span className="ml-2.5 text-[11px] font-semibold text-brand-blue bg-brand-canvas px-2.5 py-0.5 rounded-full border border-brand-blue/20">
-                Enterprise Compliance Platform
+                Enterprise Engine
               </span>
             </div>
           </div>
@@ -212,15 +185,14 @@ export default function App() {
               Tenant: <strong className="text-slate-900">Acme Legal Ops</strong>
             </span>
             <span className="text-xs font-semibold text-brand-coral bg-brand-coral/10 px-3 py-1.5 rounded-lg border border-brand-coral/20 flex items-center gap-1.5">
-              <AlertTriangle className="w-3.5 h-3.5" /> 1 Exposure Active
+              <AlertTriangle className="w-3.5 h-3.5" /> 1 Risk Detected
             </span>
           </div>
         </div>
       </header>
 
-      {/* Main Workspace Canvas */}
+      {/* Main Container */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Navigation Tabs */}
         <div className="flex gap-2 border-b border-slate-200 mb-8 pb-1">
           <button
             onClick={() => setActiveTab("dashboard")}
@@ -269,7 +241,7 @@ export default function App() {
               </div>
 
               <div className="bg-white p-6 rounded-2xl border-t-4 border-t-brand-coral border-x border-b border-slate-200 shadow-sm">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Active Exposure</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Active Risk</span>
                 <div className="text-3xl font-extrabold text-brand-coral mt-2">1 Stage</div>
                 <div className="text-xs font-semibold text-brand-coral mt-2">Screening Auto-Reject Failure</div>
               </div>
@@ -292,7 +264,7 @@ export default function App() {
           <div className="space-y-8">
             <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
               <h3 className="text-lg font-bold text-slate-900 mb-1">Trigger Algorithmic Audit</h3>
-              <p className="text-sm text-slate-500 mb-6">Select target ATS platform and upload applicant dataset to run bias calculations.</p>
+              <p className="text-sm text-slate-500 mb-6">Select target ATS platform and upload applicant dataset to run bias analysis.</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
@@ -340,7 +312,7 @@ export default function App() {
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Analyzing Funnel & Running Llama Model...
+                    Running Llama Reasoning Engine...
                   </>
                 ) : (
                   "Execute Algorithmic Audit"
@@ -348,39 +320,39 @@ export default function App() {
               </button>
             </div>
 
-            {/* Interactive Section Cards Grid */}
+            {/* Dynamic Card Layout */}
             {rawReport && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                  <h4 className="text-base font-bold text-slate-900">Audit Results & Remediation Playbooks</h4>
+                  <h4 className="text-base font-bold text-slate-900">Audit Results & Remediation Cards</h4>
                 </div>
-                <p className="text-xs text-slate-500 mb-6">Select any card below to open its detailed pop-up report.</p>
+                <p className="text-xs text-slate-500 mb-6">Select any section card below to view the full breakdown.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {getAuditSections().map((section) => (
+                  {parseReportToCards(rawReport).map((card) => (
                     <div
-                      key={section.id}
-                      onClick={() => setActiveModal(section)}
+                      key={card.id}
+                      onClick={() => setActiveModal(card)}
                       className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-brand-blue hover:shadow-lg transition-all cursor-pointer group flex flex-col justify-between"
                     >
                       <div>
                         <div className="flex justify-between items-start mb-3">
-                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{section.category}</span>
-                          <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${section.badgeColor}`}>
-                            {section.badge}
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{card.category}</span>
+                          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full border bg-brand-blue/10 text-brand-blue border-brand-blue/20">
+                            Action Item
                           </span>
                         </div>
                         <h5 className="font-bold text-slate-900 text-base group-hover:text-brand-blue transition-colors mb-2">
-                          {section.title}
+                          {card.title}
                         </h5>
                         <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
-                          {section.summary}
+                          {card.summary}
                         </p>
                       </div>
 
                       <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue">
-                        <span>Click to open modal</span>
+                        <span>Click to open pop-up details</span>
                         <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                       </div>
                     </div>
@@ -392,10 +364,10 @@ export default function App() {
         )}
       </div>
 
-      {/* POP-UP MODAL DIALOG (Clean Modern Text Display) */}
+      {/* Pop-up Modal */}
       {activeModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+          <div className="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full p-6 shadow-2xl space-y-4">
             <div className="flex justify-between items-start border-b border-slate-100 pb-4">
               <div>
                 <span className="text-xs font-bold text-brand-blue uppercase tracking-wider">{activeModal.category}</span>
@@ -409,9 +381,8 @@ export default function App() {
               </button>
             </div>
 
-            {/* Rendered Text with Zero Markdown Tags */}
             <div className="bg-slate-50/80 p-5 rounded-xl border border-slate-200/80 max-h-[60vh] overflow-y-auto">
-              <ExecutiveTextRenderer text={activeModal.content} />
+              <CleanTextRenderer text={activeModal.content} />
             </div>
 
             <div className="flex justify-end pt-2">
