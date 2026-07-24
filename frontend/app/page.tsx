@@ -315,8 +315,10 @@ export default function App() {
               <div className="absolute -right-12 -top-12 w-64 h-64 bg-brand-blue/5 rounded-full blur-3xl pointer-events-none" />
             </div>
 
-            {/* Metric Widgets Grid */}
+            {/* Metric Widgets Grid - Alternating Blue, Red, Blue, Red Pattern */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              
+              {/* 1. Compliance Score (BLUE) */}
               <div className="bg-white p-6 rounded-3xl border-t-4 border-t-brand-blue border-x border-b border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-black uppercase tracking-wider text-slate-400">Compliance Score</span>
@@ -328,21 +330,23 @@ export default function App() {
                 </div>
               </div>
 
+              {/* 2. Active Exposure (RED - Black Text for "1 Stage") */}
               <div className="bg-white p-6 rounded-3xl border-t-4 border-t-brand-coral border-x border-b border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-black uppercase tracking-wider text-slate-400">Active Exposure</span>
                   <AlertTriangle className="w-5 h-5 text-brand-coral" />
                 </div>
-                <div className="text-4xl font-black text-brand-coral tracking-tight">1 Stage</div>
+                <div className="text-4xl font-black text-slate-900 tracking-tight">1 Stage</div>
                 <div className="text-xs font-extrabold text-brand-coral mt-3 bg-brand-coral/10 w-fit px-2.5 py-1 rounded-lg border border-brand-coral/20">
                   Screening Auto-Reject Failure
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-3xl border-t-4 border-t-brand-coral border-x border-b border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+              {/* 3. EEOC Impact Ratio (BLUE) */}
+              <div className="bg-white p-6 rounded-3xl border-t-4 border-t-brand-blue border-x border-b border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-black uppercase tracking-wider text-slate-400">EEOC Impact Ratio</span>
-                  <Layers className="w-5 h-5 text-brand-coral" />
+                  <Layers className="w-5 h-5 text-brand-blue" />
                 </div>
                 <div className="text-4xl font-black text-slate-900 tracking-tight">0.33</div>
                 <div className="text-xs font-extrabold text-red-600 mt-3 bg-red-50 w-fit px-2.5 py-1 rounded-lg border border-red-200/60">
@@ -350,16 +354,18 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-3xl border-t-4 border-t-brand-blue border-x border-b border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+              {/* 4. Active ATS (RED) */}
+              <div className="bg-white p-6 rounded-3xl border-t-4 border-t-brand-coral border-x border-b border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-black uppercase tracking-wider text-slate-400">Active ATS</span>
-                  <Database className="w-5 h-5 text-brand-blue" />
+                  <Database className="w-5 h-5 text-brand-coral" />
                 </div>
                 <div className="text-2xl font-black text-slate-900 tracking-tight mt-1">{selectedAts}</div>
                 <div className="text-xs font-extrabold text-brand-blue mt-3 bg-brand-canvas w-fit px-2.5 py-1 rounded-lg border border-brand-blue/20">
                   Auto-Sync Enabled
                 </div>
               </div>
+
             </div>
           </div>
         ) : (
