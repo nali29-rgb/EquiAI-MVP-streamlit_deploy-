@@ -127,15 +127,17 @@ export default function App() {
   // Tenant Name State
   const [tenantName] = useState("Acme Legal Ops");
 
-  // Persistence: Restore tab, report, and ATS state on reload
+  // On page refresh: restore tab/ATS, but ALWAYS clear previous audit results
   useEffect(() => {
     setIsMounted(true);
     const savedTab = localStorage.getItem("equiaudit_tab");
-    const savedReport = localStorage.getItem("equiaudit_report");
     const savedAts = localStorage.getItem("equiaudit_ats");
+    
     if (savedTab) setActiveTab(savedTab);
-    if (savedReport) setRawReport(savedReport);
     if (savedAts) setSelectedAts(savedAts);
+
+    // Clear saved report on load
+    localStorage.removeItem("equiaudit_report");
   }, []);
 
   const changeTab = (tab: string) => {
@@ -178,9 +180,6 @@ export default function App() {
 
       if (data.success) {
         setRawReport(data.report);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("equiaudit_report", data.report);
-        }
       } else {
         setError(data.error || "Execution error.");
       }
