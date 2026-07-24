@@ -14,11 +14,20 @@ import {
   ChevronRight
 } from "lucide-react";
 
-// Helper component to turn raw Markdown text into clean, sleek HTML
-function CleanTextRenderer({ text }: { text: string }) {
+// Clean Sanitizer Component: Strips Markdown and renders executive UI
+function ExecutiveTextRenderer({ text }: { text: string }) {
   if (!text) return null;
 
-  // Split content by lines and format cleanly without markdown artifacts
+  // Strips **bold**, *italic*, `code`, and # symbols completely
+  const sanitize = (str: string) => {
+    return str
+      .replace(/\*\*(.*?)\*\*/g, "$1")
+      .replace(/\*(.*?)\*/g, "$1")
+      .replace(/`(.*?)`/g, "$1")
+      .replace(/^#+\s*/, "")
+      .trim();
+  };
+
   const lines = text.split("\n");
 
   return (
@@ -27,46 +36,44 @@ function CleanTextRenderer({ text }: { text: string }) {
         const trimmed = line.trim();
         if (!trimmed) return null;
 
-        // Headers (e.g. ### or ##)
+        // Headings (# or ##) -> Render as crisp Section Subheaders
         if (trimmed.startsWith("#")) {
-          const cleanHeader = trimmed.replace(/^#+\s*/, "");
           return (
-            <h4 key={idx} className="text-base font-bold text-slate-900 mt-4 mb-2 pb-1 border-b border-slate-100 flex items-center gap-2">
-              <ChevronRight className="w-4 h-4 text-brand-blue" />
-              {cleanHeader}
+            <h4 key={idx} className="text-sm font-bold text-slate-900 mt-4 mb-2 pb-1 border-b border-slate-200/80 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-blue" />
+              {sanitize(trimmed)}
             </h4>
           );
         }
 
-        // Bullet points (e.g. - or *)
+        // Bullet lists (- or *) -> Render with styled bullet indicators
         if (trimmed.startsWith("-") || trimmed.startsWith("*")) {
-          const cleanBullet = trimmed.replace(/^[-*]\s*/, "").replace(/\*\*(.*?)\*\*/g, "$1");
           return (
             <div key={idx} className="flex items-start gap-2.5 my-1.5 pl-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-brand-blue mt-2 shrink-0" />
-              <p className="text-xs text-slate-700 leading-normal">{cleanBullet}</p>
+              <div className="w-1.5 h-1.5 rounded-full bg-brand-blue/70 mt-2 shrink-0" />
+              <p className="text-xs text-slate-700 leading-normal">{sanitize(trimmed.replace(/^[-*]\s*/, ""))}</p>
             </div>
           );
         }
 
-        // Numbered lists (e.g. 1. 2.)
+        // Numbered lists (1. 2.) -> Render with custom badge pills
         if (/^\d+\./.test(trimmed)) {
-          const cleanNum = trimmed.replace(/^\d+\.\s*/, "").replace(/\*\*(.*?)\*\*/g, "$1");
+          const num = trimmed.match(/^\d+/)?.[0];
+          const rest = trimmed.replace(/^\d+\.\s*/, "");
           return (
             <div key={idx} className="flex items-start gap-2.5 my-1.5 pl-1">
-              <span className="text-xs font-bold text-brand-blue bg-brand-canvas px-1.5 py-0.5 rounded border border-brand-blue/20 shrink-0">
-                {trimmed.match(/^\d+/)?.[0]}
+              <span className="text-[10px] font-bold text-brand-blue bg-brand-canvas px-1.5 py-0.5 rounded border border-brand-blue/20 shrink-0 mt-0.5">
+                {num}
               </span>
-              <p className="text-xs text-slate-700 leading-normal mt-0.5">{cleanNum}</p>
+              <p className="text-xs text-slate-700 leading-normal">{sanitize(rest)}</p>
             </div>
           );
         }
 
-        // Standard Paragraphs (Strip residual ** bold tags for clean reading)
-        const cleanParagraph = trimmed.replace(/\*\*(.*?)\*\*/g, "$1");
+        // Standard Paragraphs -> Clean text
         return (
           <p key={idx} className="text-xs text-slate-600 leading-relaxed">
-            {cleanParagraph}
+            {sanitize(trimmed)}
           </p>
         );
       })}
@@ -88,17 +95,17 @@ export default function App() {
   const [selectedAts, setSelectedAts] = useState("Workday Recruiting");
   const [activeTab, setActiveTab] = useState("dashboard");
   
-  // API States
+  // API & Audit States
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [rawReport, setRawReport] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<AuditSection | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Trigger Audit Execution
+  // Trigger Audit Backend
   const handleRunAudit = async () => {
     if (!file) {
-      alert("Please upload a candidate CSV dataset first.");
+      alert("Please upload a CSV candidate dataset first.");
       return;
     }
 
@@ -123,66 +130,69 @@ export default function App() {
       if (data.success) {
         setRawReport(data.report);
       } else {
-        setError(data.error || "An error occurred while running the audit.");
+        setError(data.error || "An error occurred during execution.");
       }
     } catch (err) {
       console.error("API Error:", err);
-      setError("Backend server is starting up or unreachable. Please try again in 10 seconds.");
+      setError("Backend waking up or unreachable. Please try again in a few seconds.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Convert raw API response into clean structured card objects
+  // Helper to parse raw API report into 4 clean cards
   const getAuditSections = (): AuditSection[] => {
     if (!rawReport) return [];
 
-    // Simple chunking logic to divide the report into 4 clean cards
-    const chunks = rawReport.split("\n\n").filter(c => c.trim().length > 0);
+    // Clean Markdown tags out of raw summary preview text
+    const cleanPreview = (str: string) => str.replace(/[*#`]/g, "").trim();
+
+    // Split report by double linebreaks or headers
+    const chunks = rawReport.split(/\n(?=#|\n)/).filter(c => c.trim().length > 0);
 
     return [
       {
         id: "summary",
         title: "Executive Compliance Summary",
-        category: "High-Level Health",
-        summary: "Overview of algorithmic bias threshold failures and operational risk factors.",
-        badge: "Critical Review",
+        category: "High-Level Risk",
+        summary: cleanPreview(chunks[0] || "Audit review of continuous employment screening policies and disparate impact exposures."),
+        badge: "Critical Exposure",
         badgeColor: "bg-brand-coral/10 text-brand-coral border-brand-coral/20",
         content: chunks[0] || rawReport
       },
       {
         id: "eeoc",
-        title: "EEOC & Disparate Impact Analysis",
-        category: "Federal Parity Math",
-        summary: "4/5ths Rule statistical calculations across protected candidate groups.",
+        title: "EEOC & Disparate Impact Math",
+        category: "Federal Standard",
+        summary: cleanPreview(chunks[1] || "Statistical calculation under the 4/5ths Rule across protected applicant classes."),
         badge: "Impact Ratio: 0.33",
         badgeColor: "bg-amber-50 text-amber-700 border-amber-200",
-        content: chunks[1] || "Calculated Impact Ratio: 0.33. This falls below the 0.80 Federal Parity threshold required by EEOC Uniform Guidelines."
+        content: chunks[1] || "Calculated Impact Ratio: 0.33. This falls below the 0.80 Federal Parity floor, triggering EEOC audit risk."
       },
       {
         id: "ats",
-        title: `${selectedAts} Re-Configuration Playbook`,
+        title: `${selectedAts} Step-by-Step Playbook`,
         category: "ATS Remediation",
-        summary: `Actionable step-by-step guidance to re-configure auto-reject rules in ${selectedAts}.`,
+        summary: cleanPreview(chunks[2] || `Step-by-step re-configuration guide for automated screening rules inside ${selectedAts}.`),
         badge: "Action Required",
         badgeColor: "bg-brand-blue/10 text-brand-blue border-brand-blue/20",
-        content: chunks[2] || `1. Access your ${selectedAts} Admin Dashboard.\n2. Locate Auto-Reject Screening Filters.\n3. Modify continuous employment requirement from knockout filter to informational score.`
+        content: chunks[2] || `1. Access your ${selectedAts} Admin Dashboard.\n2. Navigate to Screening Filters.\n3. Convert auto-reject knockout rule to an informational scorecard metric.`
       },
       {
         id: "retention",
         title: "CRD & Data Retention Mandate",
         category: "State Law Compliance",
-        summary: "Mandatory log export and audit trail recordkeeping directives under California SB 807.",
-        badge: "4-Year Log Retention",
+        summary: cleanPreview(chunks[3] || "Mandatory audit log export and recordkeeping rules under California SB 807."),
+        badge: "4-Year Recordkeeping",
         badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
-        content: chunks[3] || "Under CRD rules and SB 807, all automated screening decisions, parameters, and candidate score logs must be securely archived for a minimum of 4 years."
+        content: chunks[3] || "Under California CRD regulations and SB 807, all algorithmic scoring parameter changes and candidate evaluation logs must be securely retained for 4 years."
       }
     ];
   };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased">
-      {/* SaaS Header */}
+      {/* SaaS Top Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -192,7 +202,7 @@ export default function App() {
             <div>
               <span className="font-bold text-base tracking-tight text-slate-900">EquiAudit AI</span>
               <span className="ml-2.5 text-[11px] font-semibold text-brand-blue bg-brand-canvas px-2.5 py-0.5 rounded-full border border-brand-blue/20">
-                Enterprise Workspace
+                Enterprise Compliance Platform
               </span>
             </div>
           </div>
@@ -202,13 +212,13 @@ export default function App() {
               Tenant: <strong className="text-slate-900">Acme Legal Ops</strong>
             </span>
             <span className="text-xs font-semibold text-brand-coral bg-brand-coral/10 px-3 py-1.5 rounded-lg border border-brand-coral/20 flex items-center gap-1.5">
-              <AlertTriangle className="w-3.5 h-3.5" /> 1 Active Risk
+              <AlertTriangle className="w-3.5 h-3.5" /> 1 Exposure Active
             </span>
           </div>
         </div>
       </header>
 
-      {/* Main Container */}
+      {/* Main Workspace Canvas */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Navigation Tabs */}
         <div className="flex gap-2 border-b border-slate-200 mb-8 pb-1">
@@ -254,12 +264,12 @@ export default function App() {
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Compliance Score</span>
                 <div className="text-3xl font-extrabold text-brand-blue mt-2">84%</div>
                 <div className="flex items-center text-xs font-semibold text-emerald-600 mt-2">
-                  <ArrowUpRight className="w-3.5 h-3.5 mr-0.5" /> +4% vs last quarter
+                  <ArrowUpRight className="w-3.5 h-3.5 mr-0.5" /> +4% vs last audit
                 </div>
               </div>
 
               <div className="bg-white p-6 rounded-2xl border-t-4 border-t-brand-coral border-x border-b border-slate-200 shadow-sm">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Active Risk</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Active Exposure</span>
                 <div className="text-3xl font-extrabold text-brand-coral mt-2">1 Stage</div>
                 <div className="text-xs font-semibold text-brand-coral mt-2">Screening Auto-Reject Failure</div>
               </div>
@@ -282,7 +292,7 @@ export default function App() {
           <div className="space-y-8">
             <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
               <h3 className="text-lg font-bold text-slate-900 mb-1">Trigger Algorithmic Audit</h3>
-              <p className="text-sm text-slate-500 mb-6">Select your target ATS platform and upload applicant data to run bias analysis.</p>
+              <p className="text-sm text-slate-500 mb-6">Select target ATS platform and upload applicant dataset to run bias calculations.</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
@@ -330,7 +340,7 @@ export default function App() {
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Analyzing Candidate Funnel & Executing Llama Model...
+                    Analyzing Funnel & Running Llama Model...
                   </>
                 ) : (
                   "Execute Algorithmic Audit"
@@ -338,14 +348,14 @@ export default function App() {
               </button>
             </div>
 
-            {/* Clean Interactive Cards (Mentor's Layout Request) */}
+            {/* Interactive Section Cards Grid */}
             {rawReport && (
               <div>
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                   <h4 className="text-base font-bold text-slate-900">Audit Results & Remediation Playbooks</h4>
                 </div>
-                <p className="text-xs text-slate-500 mb-6">Select any section card below to open detailed interactive guidelines.</p>
+                <p className="text-xs text-slate-500 mb-6">Select any card below to open its detailed pop-up report.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {getAuditSections().map((section) => (
@@ -364,13 +374,13 @@ export default function App() {
                         <h5 className="font-bold text-slate-900 text-base group-hover:text-brand-blue transition-colors mb-2">
                           {section.title}
                         </h5>
-                        <p className="text-xs text-slate-600 leading-relaxed">
+                        <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
                           {section.summary}
                         </p>
                       </div>
 
                       <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue">
-                        <span>Click to view full breakdown</span>
+                        <span>Click to open modal</span>
                         <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                       </div>
                     </div>
@@ -382,7 +392,7 @@ export default function App() {
         )}
       </div>
 
-      {/* POP-UP MODAL DIALOG (Clean Text Formatting) */}
+      {/* POP-UP MODAL DIALOG (Clean Modern Text Display) */}
       {activeModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
@@ -393,15 +403,15 @@ export default function App() {
               </div>
               <button
                 onClick={() => setActiveModal(null)}
-                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Clean Formatted Text Output Container */}
+            {/* Rendered Text with Zero Markdown Tags */}
             <div className="bg-slate-50/80 p-5 rounded-xl border border-slate-200/80 max-h-[60vh] overflow-y-auto">
-              <CleanTextRenderer text={activeModal.content} />
+              <ExecutiveTextRenderer text={activeModal.content} />
             </div>
 
             <div className="flex justify-end pt-2">
@@ -409,7 +419,7 @@ export default function App() {
                 onClick={() => setActiveModal(null)}
                 className="bg-brand-blue text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-brand-coral transition-all shadow-sm"
               >
-                Close Report Section
+                Close Details
               </button>
             </div>
           </div>
