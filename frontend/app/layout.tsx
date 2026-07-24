@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "EquiAudit AI | Enterprise Compliance Platform",
   description: "Continuous EEOC & Algorithmic Bias Auditing for Enterprise ATS Systems",
   icons: {
-    icon: "/logo.png", // Uses the image from public/logo.png
+    icon: "/logo.png",
   },
 };
 
