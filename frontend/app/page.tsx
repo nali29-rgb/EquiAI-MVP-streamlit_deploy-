@@ -18,28 +18,50 @@ import {
   Database
 } from "lucide-react";
 
-// EquiAudit Official Logo SVG Component
+// Official EquiAudit Logo (Exact match to brand guidelines)
 function EquiAuditLogo() {
   return (
-    <div className="flex items-center gap-3">
-      <div className="relative flex items-center justify-center">
-        {/* Coral Top Bar & Blue Left Accent */}
-        <svg width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-          <rect x="0" y="0" width="16" height="100" fill="#6B82C1" />
-          <rect x="0" y="0" width="100" height="16" fill="#F48873" />
-          {/* Handwritten EA Flourish Stylization */}
-          <path d="M25 65 C40 30, 65 30, 85 40 C60 65, 35 75, 75 75" stroke="#6B82C1" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M45 58 L75 58" stroke="#F48873" strokeWidth="10" strokeLinecap="round" />
-          <path d="M48 72 L78 72" stroke="#F48873" strokeWidth="10" strokeLinecap="round" />
-        </svg>
+    <div className="flex items-center gap-3 select-none">
+      {/* Dual-Color Margin Stripe */}
+      <div className="h-10 w-2.5 flex flex-col rounded-full overflow-hidden shrink-0 shadow-xs">
+        <div className="h-2.5 w-full bg-[#F48873]" />
+        <div className="h-full w-full bg-[#6B82C1]" />
       </div>
-      <div className="flex flex-col">
-        <span className="font-extrabold text-xl tracking-tight text-slate-900 leading-none">
-          Equi<span className="text-brand-blue">Audit</span> <span className="text-brand-coral font-light">AI</span>
-        </span>
-        <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-0.5">
-          Enterprise Compliance Platform
-        </span>
+
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col">
+          {/* Main Brand Typography */}
+          <div className="flex items-baseline">
+            <span className="text-2xl font-light tracking-tight text-slate-900 font-sans">
+              Equi<span className="font-bold text-slate-900">Audit</span>
+            </span>
+            <span className="ml-1.5 text-[10px] font-black text-[#6B82C1] tracking-wider uppercase bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/60">
+              AI
+            </span>
+          </div>
+
+          {/* Underline Tri-Color Accent Bar */}
+          <div className="flex items-center gap-0.5 mt-1 h-1.5 w-24 rounded-full overflow-hidden">
+            <div className="h-full w-1/3 bg-[#F48873]" />
+            <div className="h-full w-1/6 bg-slate-900" />
+            <div className="h-full w-1/2 bg-[#6B82C1]" />
+          </div>
+        </div>
+
+        {/* Handwritten 'ea' Signature Mark */}
+        <svg width="52" height="40" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 ml-1">
+          {/* Stylized EA Flourish in Periwinkle Blue */}
+          <path 
+            d="M 18 52 C 22 35, 42 18, 52 28 C 60 36, 28 62, 20 68 C 12 74, 25 78, 42 62 C 55 50, 68 38, 78 48 C 85 55, 65 78, 108 22" 
+            stroke="#6B82C1" 
+            strokeWidth="8" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          />
+          {/* Double Coral Accent Bars */}
+          <path d="M 46 56 L 76 56" stroke="#F48873" strokeWidth="7" strokeLinecap="round" />
+          <path d="M 48 67 L 78 67" stroke="#F48873" strokeWidth="7" strokeLinecap="round" />
+        </svg>
       </div>
     </div>
   );
@@ -57,7 +79,7 @@ const cleanText = (str: string): string => {
     .trim();
 };
 
-// Executive Renderer with Larger, High-Impact Font Sizing
+// Executive Renderer with High-Impact Font Sizing
 function ExecutiveTextRenderer({ text }: { text: string }) {
   if (!text) return null;
   const lines = text.split("\n");
@@ -243,11 +265,11 @@ export default function App() {
 
   const { protocolNote, cards } = parseReport(rawReport || "");
 
-  if (!isMounted) return null; // Avoids SSR hydration flash
+  if (!isMounted) return null;
 
   return (
     <div className="min-h-screen bg-slate-50/70 text-slate-900 font-sans antialiased selection:bg-brand-blue selection:text-white">
-      {/* Modern Top Header with Official Logo */}
+      {/* Modern Top Header with Refined Official Logo */}
       <header className="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <EquiAuditLogo />
@@ -295,7 +317,7 @@ export default function App() {
         {/* TAB 1: SLEEK ENTERPRISE DASHBOARD OVERVIEW */}
         {activeTab === "dashboard" ? (
           <div className="space-y-8 animate-in fade-in duration-300">
-            {/* Sleek Hero Banner */}
+            {/* Hero Banner */}
             <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-brand-canvas/30 p-8 rounded-3xl border border-slate-200/90 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div className="space-y-2 z-10 max-w-2xl">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-blue/10 text-brand-blue text-xs font-extrabold uppercase tracking-wider border border-brand-blue/20">
@@ -316,7 +338,6 @@ export default function App() {
                 Run Fresh Audit <ArrowUpRight className="w-4 h-4" />
               </button>
 
-              {/* Decorative Accent Glow */}
               <div className="absolute -right-12 -top-12 w-64 h-64 bg-brand-blue/5 rounded-full blur-3xl pointer-events-none" />
             </div>
 
@@ -439,7 +460,7 @@ export default function App() {
                   <h4 className="text-xl font-black text-slate-900 tracking-tight">Audit Results & Executive Action Items</h4>
                 </div>
 
-                {/* 1. TOP WRITTEN PROTOCOL BANNER (No Pop-up) */}
+                {/* Top Written Protocol Banner */}
                 {protocolNote && (
                   <div className="bg-gradient-to-r from-brand-canvas/60 via-white to-brand-canvas/30 border border-brand-blue/25 rounded-2xl p-6 flex items-start gap-4 shadow-sm">
                     <Info className="w-6 h-6 text-brand-blue shrink-0 mt-0.5" />
@@ -452,7 +473,7 @@ export default function App() {
                   </div>
                 )}
 
-                {/* 2. BIGGER SQUARE CARDS (2 OCCUPYING EACH ROW) */}
+                {/* 2-Column Square Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {cards.map((card) => (
                     <div
@@ -471,12 +492,12 @@ export default function App() {
                           </span>
                         </div>
 
-                        {/* Ultra-Concise Punchy Heading (Max 3-4 Words) */}
+                        {/* Concise Punchy Heading */}
                         <h5 className="text-xl font-black text-slate-900 group-hover:text-brand-blue transition-colors leading-snug mb-3">
                           {card.title}
                         </h5>
 
-                        {/* High-Impact Main Highlight (Larger Font, Pops Instantly) */}
+                        {/* High-Impact Main Highlight */}
                         <p className="text-sm font-semibold text-slate-600 leading-relaxed line-clamp-3">
                           {card.keyHighlight}...
                         </p>
@@ -496,7 +517,7 @@ export default function App() {
         )}
       </div>
 
-      {/* High-Impact Pop-up Modal */}
+      {/* Pop-up Modal */}
       {activeModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in-95">
@@ -515,7 +536,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Modal Body with Larger High-Impact Font */}
             <div className="bg-slate-50/80 p-6 rounded-2xl border border-slate-200 max-h-[60vh] overflow-y-auto">
               <ExecutiveTextRenderer text={activeModal.content} />
             </div>
