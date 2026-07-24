@@ -55,6 +55,13 @@ CRITICAL INSTRUCTIONS:
 2. Do NOT mention Greenhouse if the user selected Workday Recruiting (or vice versa).
 3. Section 3 MUST format each step on its own individual line as a numbered list.
 
+CRITICAL INSTRUCTIONS FOR ATS-SPECIFIC REMEDIATION STEPS:
+1. Always explicitly use the exact target ATS name "{target_ats}" (e.g., "Greenhouse", "Workday Recruiting").
+2. NEVER use generic terms like "target ATS", "the target ATS platform", or "the system".
+3. Use exact UI terminology native to {target_ats}:
+   - For Greenhouse: Use "Job Setup", "Job Posts", "Manage Rules", "Scorecard", "Focus Attributes".
+   - For Workday Recruiting: Use "Business Process Definer", "Condition Rules", "Knockout Criteria".
+
 Standard 4-section layout:
 
 💧 **Audit Protocol Note:** A multi-state legal approach has been taken for universal compliance across all active federal and state regulatory jurisdictions.
