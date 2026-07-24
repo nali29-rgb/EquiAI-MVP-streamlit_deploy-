@@ -10,21 +10,26 @@ import {
   X,
   CheckCircle2,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Info
 } from "lucide-react";
 
-// Clean Text Renderer: Strips all raw Markdown syntax (*, #, `)
-function CleanTextRenderer({ text }: { text: string }) {
-  if (!text) return null;
+// Sanitizer utility: Removes Markdown syntax AND emojis completely
+const cleanText = (str: string) => {
+  if (!str) return "";
+  return str
+    // Remove all standard and extended emoji ranges
+    .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F004}\u{1F0CF}\u{1F170}-\u{1F251}]/gu, '')
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/`(.*?)`/g, "$1")
+    .replace(/^#+\s*/, "")
+    .trim();
+};
 
-  const sanitize = (str: string) => {
-    return str
-      .replace(/\*\*(.*?)\*\*/g, "$1")
-      .replace(/\*(.*?)\*/g, "$1")
-      .replace(/`(.*?)`/g, "$1")
-      .replace(/^#+\s*/, "")
-      .trim();
-  };
+// Executive Text Renderer for Modal Dialogs
+function ExecutiveTextRenderer({ text }: { text: string }) {
+  if (!text) return null;
 
   const lines = text.split("\n");
 
@@ -34,24 +39,27 @@ function CleanTextRenderer({ text }: { text: string }) {
         const trimmed = line.trim();
         if (!trimmed) return null;
 
+        // Section Headers
         if (trimmed.startsWith("#")) {
           return (
             <h4 key={idx} className="text-sm font-bold text-slate-900 mt-4 mb-2 pb-1 border-b border-slate-200 flex items-center gap-2">
               <ChevronRight className="w-4 h-4 text-brand-blue" />
-              {sanitize(trimmed)}
+              {cleanText(trimmed)}
             </h4>
           );
         }
 
+        // Bullet Lists
         if (trimmed.startsWith("-") || trimmed.startsWith("*")) {
           return (
             <div key={idx} className="flex items-start gap-2.5 my-1.5 pl-1">
               <div className="w-1.5 h-1.5 rounded-full bg-brand-blue mt-2 shrink-0" />
-              <p className="text-xs text-slate-700 leading-normal">{sanitize(trimmed.replace(/^[-*]\s*/, ""))}</p>
+              <p className="text-xs text-slate-700 leading-normal">{cleanText(trimmed.replace(/^[-*]\s*/, ""))}</p>
             </div>
           );
         }
 
+        // Numbered Lists
         if (/^\d+\./.test(trimmed)) {
           const num = trimmed.match(/^\d+/)?.[0];
           const rest = trimmed.replace(/^\d+\.\s*/, "");
@@ -60,14 +68,15 @@ function CleanTextRenderer({ text }: { text: string }) {
               <span className="text-[10px] font-bold text-brand-blue bg-brand-canvas px-1.5 py-0.5 rounded border border-brand-blue/20 shrink-0 mt-0.5">
                 {num}
               </span>
-              <p className="text-xs text-slate-700 leading-normal">{sanitize(rest)}</p>
+              <p className="text-xs text-slate-700 leading-normal">{cleanText(rest)}</p>
             </div>
           );
         }
 
+        // Standard Text
         return (
           <p key={idx} className="text-xs text-slate-600 leading-relaxed">
-            {sanitize(trimmed)}
+            {cleanText(trimmed)}
           </p>
         );
       })}
@@ -79,7 +88,6 @@ interface DynamicCard {
   id: string;
   title: string;
   category: string;
-  summary: string;
   content: string;
 }
 
@@ -130,42 +138,48 @@ export default function App() {
     }
   };
 
-  // DYNAMIC PARSER: Automatically splits Llama output by headers into cards
-  const parseReportToCards = (text: string): DynamicCard[] => {
-    if (!text) return [];
+  // Parser: Separates "Audit Protocol Note" into top notice and converts remainder to compact cards
+  const parseReport = (text: string) => {
+    if (!text) return { protocolNote: null, cards: [] };
 
+    let protocolNote: string | null = null;
+    const cards: DynamicCard[] = [];
+
+    // Split text by markdown headings
     const rawSections = text.split(/(?=^#{1,3}\s)/m).filter(s => s.trim().length > 0);
 
-    if (rawSections.length === 0) {
-      return [{
-        id: "sec-0",
-        title: "Compliance Findings",
-        category: "Audit Analysis",
-        summary: text.replace(/[*#`]/g, "").slice(0, 120) + "...",
-        content: text
-      }];
-    }
-
-    return rawSections.map((sec, idx) => {
+    rawSections.forEach((sec) => {
       const lines = sec.trim().split("\n");
-      const rawTitle = lines[0] || `Section ${idx + 1}`;
-      const cleanTitle = rawTitle.replace(/^#+\s*/, "").replace(/\*\*/g, "").trim();
+      const rawTitle = lines[0] || "";
+      const cleanedTitle = cleanText(rawTitle);
       const body = lines.slice(1).join("\n").trim();
-      const cleanSummary = (body || sec).replace(/[*#`]/g, "").slice(0, 110) + "...";
 
-      return {
-        id: `sec-${idx}`,
-        title: cleanTitle || `Compliance Finding ${idx + 1}`,
-        category: `Module 0${idx + 1}`,
-        summary: cleanSummary,
-        content: body || sec
-      };
+      // Detect if this section is the Audit Protocol Note
+      if (
+        cleanedTitle.toLowerCase().includes("audit protocol note") || 
+        sec.toLowerCase().includes("audit protocol note")
+      ) {
+        const fullNote = cleanText(sec);
+        protocolNote = fullNote.replace(/^audit protocol note:?/i, "").trim();
+      } else {
+        // Build concise Module title
+        cards.push({
+          id: `sec-${cards.length + 1}`,
+          title: cleanedTitle || `Compliance Module ${cards.length + 1}`,
+          category: `MODULE 0${cards.length + 1}`,
+          content: body || sec
+        });
+      }
     });
+
+    return { protocolNote, cards };
   };
+
+  const { protocolNote, cards } = parseReport(rawReport || "");
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased">
-      {/* Header */}
+      {/* SaaS Top Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -191,7 +205,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Container */}
+      {/* Main Canvas */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex gap-2 border-b border-slate-200 mb-8 pb-1">
           <button
@@ -312,7 +326,7 @@ export default function App() {
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Running Llama Reasoning Engine...
+                    Running Compliance Engine...
                   </>
                 ) : (
                   "Execute Algorithmic Audit"
@@ -320,40 +334,50 @@ export default function App() {
               </button>
             </div>
 
-            {/* Dynamic Card Layout */}
+            {/* Audit Results Container */}
             {rawReport && (
-              <div>
-                <div className="flex items-center gap-2 mb-3">
+              <div className="space-y-6">
+                <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                   <h4 className="text-base font-bold text-slate-900">Audit Results & Remediation Cards</h4>
                 </div>
-                <p className="text-xs text-slate-500 mb-6">Select any section card below to view the full breakdown.</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {parseReportToCards(rawReport).map((card) => (
+                {/* 1. WRITTEN NOTICE AT THE TOP (Not a pop-up) */}
+                {protocolNote && (
+                  <div className="bg-brand-canvas/40 border border-brand-blue/20 rounded-2xl p-5 flex items-start gap-3 shadow-sm">
+                    <Info className="w-5 h-5 text-brand-blue shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <h5 className="text-xs font-bold text-brand-blue uppercase tracking-wider">Audit Protocol Notice</h5>
+                      <p className="text-xs text-slate-700 font-medium leading-relaxed">
+                        {protocolNote}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. COMPACT CARDS GRID (Showing Concise Titles Only) */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {cards.map((card) => (
                     <div
                       key={card.id}
                       onClick={() => setActiveModal(card)}
-                      className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-brand-blue hover:shadow-lg transition-all cursor-pointer group flex flex-col justify-between"
+                      className="bg-white p-5 rounded-2xl border border-slate-200 hover:border-brand-blue hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between h-36"
                     >
                       <div>
-                        <div className="flex justify-between items-start mb-3">
-                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{card.category}</span>
-                          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full border bg-brand-blue/10 text-brand-blue border-brand-blue/20">
-                            Action Item
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">{card.category}</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                            Action
                           </span>
                         </div>
-                        <h5 className="font-bold text-slate-900 text-base group-hover:text-brand-blue transition-colors mb-2">
+                        <h5 className="font-bold text-slate-900 text-sm group-hover:text-brand-blue transition-colors leading-snug line-clamp-2">
                           {card.title}
                         </h5>
-                        <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
-                          {card.summary}
-                        </p>
                       </div>
 
-                      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue">
-                        <span>Click to open pop-up details</span>
-                        <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-blue">
+                        <span className="text-[11px]">View breakdown</span>
+                        <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </div>
                     </div>
                   ))}
@@ -364,14 +388,14 @@ export default function App() {
         )}
       </div>
 
-      {/* Pop-up Modal */}
+      {/* Pop-up Modal (Opened on Card Click) */}
       {activeModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full p-6 shadow-2xl space-y-4">
             <div className="flex justify-between items-start border-b border-slate-100 pb-4">
               <div>
                 <span className="text-xs font-bold text-brand-blue uppercase tracking-wider">{activeModal.category}</span>
-                <h3 className="text-lg font-bold text-slate-900 mt-1">{activeModal.title}</h3>
+                <h3 className="text-base font-bold text-slate-900 mt-1">{activeModal.title}</h3>
               </div>
               <button
                 onClick={() => setActiveModal(null)}
@@ -382,7 +406,7 @@ export default function App() {
             </div>
 
             <div className="bg-slate-50/80 p-5 rounded-xl border border-slate-200/80 max-h-[60vh] overflow-y-auto">
-              <CleanTextRenderer text={activeModal.content} />
+              <ExecutiveTextRenderer text={activeModal.content} />
             </div>
 
             <div className="flex justify-end pt-2">
