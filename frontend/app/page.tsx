@@ -18,49 +18,44 @@ import {
   Database
 } from "lucide-react";
 
-// Official EquiAudit Logo (Exact match to brand guidelines)
+// Official EquiAudit Brand Logo (Exact SVG match to image)
 function EquiAuditLogo() {
   return (
-    <div className="flex items-center gap-3 select-none">
-      {/* Dual-Color Margin Stripe */}
-      <div className="h-10 w-2.5 flex flex-col rounded-full overflow-hidden shrink-0 shadow-xs">
-        <div className="h-2.5 w-full bg-[#F48873]" />
+    <div className="flex items-center gap-3.5 select-none">
+      {/* Left Dual Margin Stripe (Coral Top, Blue Bottom) */}
+      <div className="h-9 w-2 flex flex-col rounded-xs overflow-hidden shrink-0 shadow-xs">
+        <div className="h-3 w-full bg-[#F48873]" />
         <div className="h-full w-full bg-[#6B82C1]" />
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="flex flex-col">
-          {/* Main Brand Typography */}
-          <div className="flex items-baseline">
-            <span className="text-2xl font-light tracking-tight text-slate-900 font-sans">
-              Equi<span className="font-bold text-slate-900">Audit</span>
-            </span>
-            <span className="ml-1.5 text-[10px] font-black text-[#6B82C1] tracking-wider uppercase bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/60">
-              AI
-            </span>
-          </div>
-
-          {/* Underline Tri-Color Accent Bar */}
-          <div className="flex items-center gap-0.5 mt-1 h-1.5 w-24 rounded-full overflow-hidden">
-            <div className="h-full w-1/3 bg-[#F48873]" />
-            <div className="h-full w-1/6 bg-slate-900" />
-            <div className="h-full w-1/2 bg-[#6B82C1]" />
+        {/* Typography & Underline Bar */}
+        <div className="flex flex-col justify-center">
+          <span className="text-2xl font-sans tracking-tight text-slate-900 font-normal leading-none">
+            Equi<span className="font-semibold text-slate-900">Audit</span>
+          </span>
+          {/* Tri-Color Accent Bar (Coral, Black, Blue) */}
+          <div className="flex items-center mt-1.5 h-1.5 w-20 rounded-full overflow-hidden">
+            <div className="h-full w-[35%] bg-[#F48873]" />
+            <div className="h-full w-[15%] bg-slate-900" />
+            <div className="h-full w-[50%] bg-[#6B82C1]" />
           </div>
         </div>
 
-        {/* Handwritten 'ea' Signature Mark */}
-        <svg width="52" height="40" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 ml-1">
-          {/* Stylized EA Flourish in Periwinkle Blue */}
+        {/* Handwritten 'ea' Signature Mark with Double Coral Underlines */}
+        <svg width="58" height="42" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 ml-0.5">
+          {/* Double Coral Accent Bars */}
+          <path d="M 44 54 L 76 54" stroke="#F48873" strokeWidth="6" strokeLinecap="round" />
+          <path d="M 46 66 L 74 66" stroke="#F48873" strokeWidth="6" strokeLinecap="round" />
+          
+          {/* Handwritten EA Flourish Stroke */}
           <path 
-            d="M 18 52 C 22 35, 42 18, 52 28 C 60 36, 28 62, 20 68 C 12 74, 25 78, 42 62 C 55 50, 68 38, 78 48 C 85 55, 65 78, 108 22" 
+            d="M 18 52 C 22 32, 42 16, 54 26 C 62 34, 28 62, 20 68 C 12 74, 26 78, 44 60 C 58 46, 70 34, 82 46 C 88 52, 68 76, 108 20" 
             stroke="#6B82C1" 
-            strokeWidth="8" 
+            strokeWidth="7" 
             strokeLinecap="round" 
             strokeLinejoin="round"
           />
-          {/* Double Coral Accent Bars */}
-          <path d="M 46 56 L 76 56" stroke="#F48873" strokeWidth="7" strokeLinecap="round" />
-          <path d="M 48 67 L 78 67" stroke="#F48873" strokeWidth="7" strokeLinecap="round" />
         </svg>
       </div>
     </div>
@@ -269,8 +264,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50/70 text-slate-900 font-sans antialiased selection:bg-brand-blue selection:text-white">
-      {/* Modern Top Header with Refined Official Logo */}
-      <header className="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-sm">
+      {/* Header with Official Logo */}
+      <header className="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <EquiAuditLogo />
 
@@ -290,7 +285,7 @@ export default function App() {
       {/* Main Container */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         
-        {/* Sleek Navigation Tabs */}
+        {/* Navigation Tabs */}
         <div className="bg-slate-200/60 p-1.5 rounded-2xl inline-flex gap-1 mb-8 border border-slate-200 shadow-inner">
           <button
             onClick={() => changeTab("dashboard")}
@@ -314,7 +309,7 @@ export default function App() {
           </button>
         </div>
 
-        {/* TAB 1: SLEEK ENTERPRISE DASHBOARD OVERVIEW */}
+        {/* TAB 1: DASHBOARD OVERVIEW */}
         {activeTab === "dashboard" ? (
           <div className="space-y-8 animate-in fade-in duration-300">
             {/* Hero Banner */}
@@ -389,7 +384,7 @@ export default function App() {
             </div>
           </div>
         ) : (
-          /* TAB 2: AUDIT WORKFLOW & BIG 2-COLUMN CARDS */
+          /* TAB 2: AUDIT WORKFLOW */
           <div className="space-y-8 animate-in fade-in duration-300">
             {/* Upload Card */}
             <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
@@ -492,12 +487,12 @@ export default function App() {
                           </span>
                         </div>
 
-                        {/* Concise Punchy Heading */}
+                        {/* Concise Heading */}
                         <h5 className="text-xl font-black text-slate-900 group-hover:text-brand-blue transition-colors leading-snug mb-3">
                           {card.title}
                         </h5>
 
-                        {/* High-Impact Main Highlight */}
+                        {/* Main Highlight */}
                         <p className="text-sm font-semibold text-slate-600 leading-relaxed line-clamp-3">
                           {card.keyHighlight}...
                         </p>
