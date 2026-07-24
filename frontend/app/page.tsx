@@ -14,12 +14,13 @@ import {
   Info
 } from "lucide-react";
 
-// Sanitizer utility: Removes Markdown syntax AND emojis completely
-const cleanText = (str: string) => {
+// Safe Sanitizer: Removes Markdown AND emojis (compatible with Next.js SWC build target)
+const cleanText = (str: string): string => {
   if (!str) return "";
   return str
-    // Remove all standard and extended emoji ranges
-    .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F004}\u{1F0CF}\u{1F170}-\u{1F251}]/gu, '')
+    // Standard Emoji Stripper
+    .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
+    // Markdown Stripper
     .replace(/\*\*(.*?)\*\*/g, "$1")
     .replace(/\*(.*?)\*/g, "$1")
     .replace(/`(.*?)`/g, "$1")
@@ -27,7 +28,7 @@ const cleanText = (str: string) => {
     .trim();
 };
 
-// Executive Text Renderer for Modal Dialogs
+// Executive Renderer for Modal Pop-up Content
 function ExecutiveTextRenderer({ text }: { text: string }) {
   if (!text) return null;
 
@@ -39,7 +40,6 @@ function ExecutiveTextRenderer({ text }: { text: string }) {
         const trimmed = line.trim();
         if (!trimmed) return null;
 
-        // Section Headers
         if (trimmed.startsWith("#")) {
           return (
             <h4 key={idx} className="text-sm font-bold text-slate-900 mt-4 mb-2 pb-1 border-b border-slate-200 flex items-center gap-2">
@@ -49,7 +49,6 @@ function ExecutiveTextRenderer({ text }: { text: string }) {
           );
         }
 
-        // Bullet Lists
         if (trimmed.startsWith("-") || trimmed.startsWith("*")) {
           return (
             <div key={idx} className="flex items-start gap-2.5 my-1.5 pl-1">
@@ -59,7 +58,6 @@ function ExecutiveTextRenderer({ text }: { text: string }) {
           );
         }
 
-        // Numbered Lists
         if (/^\d+\./.test(trimmed)) {
           const num = trimmed.match(/^\d+/)?.[0];
           const rest = trimmed.replace(/^\d+\.\s*/, "");
@@ -73,7 +71,6 @@ function ExecutiveTextRenderer({ text }: { text: string }) {
           );
         }
 
-        // Standard Text
         return (
           <p key={idx} className="text-xs text-slate-600 leading-relaxed">
             {cleanText(trimmed)}
@@ -138,14 +135,13 @@ export default function App() {
     }
   };
 
-  // Parser: Separates "Audit Protocol Note" into top notice and converts remainder to compact cards
+  // Parser: Separates Protocol Note to top banner and creates concise cards
   const parseReport = (text: string) => {
     if (!text) return { protocolNote: null, cards: [] };
 
     let protocolNote: string | null = null;
     const cards: DynamicCard[] = [];
 
-    // Split text by markdown headings
     const rawSections = text.split(/(?=^#{1,3}\s)/m).filter(s => s.trim().length > 0);
 
     rawSections.forEach((sec) => {
@@ -154,7 +150,6 @@ export default function App() {
       const cleanedTitle = cleanText(rawTitle);
       const body = lines.slice(1).join("\n").trim();
 
-      // Detect if this section is the Audit Protocol Note
       if (
         cleanedTitle.toLowerCase().includes("audit protocol note") || 
         sec.toLowerCase().includes("audit protocol note")
@@ -162,7 +157,6 @@ export default function App() {
         const fullNote = cleanText(sec);
         protocolNote = fullNote.replace(/^audit protocol note:?/i, "").trim();
       } else {
-        // Build concise Module title
         cards.push({
           id: `sec-${cards.length + 1}`,
           title: cleanedTitle || `Compliance Module ${cards.length + 1}`,
@@ -342,7 +336,7 @@ export default function App() {
                   <h4 className="text-base font-bold text-slate-900">Audit Results & Remediation Cards</h4>
                 </div>
 
-                {/* 1. WRITTEN NOTICE AT THE TOP (Not a pop-up) */}
+                {/* 1. TOP WRITTEN BANNER */}
                 {protocolNote && (
                   <div className="bg-brand-canvas/40 border border-brand-blue/20 rounded-2xl p-5 flex items-start gap-3 shadow-sm">
                     <Info className="w-5 h-5 text-brand-blue shrink-0 mt-0.5" />
@@ -355,7 +349,7 @@ export default function App() {
                   </div>
                 )}
 
-                {/* 2. COMPACT CARDS GRID (Showing Concise Titles Only) */}
+                {/* 2. CONCISE CARDS GRID */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   {cards.map((card) => (
                     <div
@@ -388,7 +382,7 @@ export default function App() {
         )}
       </div>
 
-      {/* Pop-up Modal (Opened on Card Click) */}
+      {/* Pop-up Modal */}
       {activeModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full p-6 shadow-2xl space-y-4">
