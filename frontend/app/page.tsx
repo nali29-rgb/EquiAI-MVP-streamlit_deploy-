@@ -118,7 +118,7 @@ interface DynamicCard {
 }
 
 export default function App() {
-  const [selectedAts, setSelectedAts] = useState("Workday Recruiting");
+  const [selectedAts, setSelectedAts] = useState("Greenhouse");
   const [activeTab, setActiveTab] = useState("dashboard");
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -127,19 +127,28 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Persistence: Restore tab and report state on reload
+  // Persistence: Restore tab, report, and ATS state on reload
   useEffect(() => {
     setIsMounted(true);
     const savedTab = localStorage.getItem("equiaudit_tab");
     const savedReport = localStorage.getItem("equiaudit_report");
+    const savedAts = localStorage.getItem("equiaudit_ats");
     if (savedTab) setActiveTab(savedTab);
     if (savedReport) setRawReport(savedReport);
+    if (savedAts) setSelectedAts(savedAts);
   }, []);
 
   const changeTab = (tab: string) => {
     setActiveTab(tab);
     if (typeof window !== "undefined") {
       localStorage.setItem("equiaudit_tab", tab);
+    }
+  };
+
+  const handleAtsChange = (ats: string) => {
+    setSelectedAts(ats);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("equiaudit_ats", ats);
     }
   };
 
@@ -348,7 +357,7 @@ export default function App() {
 
               <div className="bg-white p-6 rounded-3xl border-t-4 border-t-brand-blue border-x border-b border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-xs font-black uppercase tracking-wider text-slate-400">Target ATS</span>
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-400">Active ATS</span>
                   <Database className="w-5 h-5 text-brand-blue" />
                 </div>
                 <div className="text-2xl font-black text-slate-900 tracking-tight mt-1">{selectedAts}</div>
@@ -364,20 +373,22 @@ export default function App() {
             {/* Upload Card */}
             <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
               <h3 className="text-xl font-extrabold text-slate-900 mb-1">Trigger Algorithmic Audit</h3>
-              <p className="text-sm font-medium text-slate-500 mb-6">Select target ATS platform and upload applicant dataset to calculate disparate impact metrics.</p>
+              <p className="text-sm font-medium text-slate-500 mb-6">
+                Select applicant tracking system and upload candidate dataset to calculate disparate impact metrics for <span className="font-extrabold text-brand-blue">{selectedAts}</span>.
+              </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">Target ATS Platform</label>
+                  <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">ATS Platform</label>
                   <select
                     value={selectedAts}
-                    onChange={(e) => setSelectedAts(e.target.value)}
+                    onChange={(e) => handleAtsChange(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-300 rounded-2xl p-3.5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-brand-blue outline-none"
                   >
-                    <option>Workday Recruiting</option>
-                    <option>Greenhouse</option>
-                    <option>Lever</option>
-                    <option>SmartRecruiters</option>
+                    <option value="Greenhouse">Greenhouse</option>
+                    <option value="Workday Recruiting">Workday Recruiting</option>
+                    <option value="Lever">Lever</option>
+                    <option value="SmartRecruiters">SmartRecruiters</option>
                   </select>
                 </div>
 
@@ -412,10 +423,10 @@ export default function App() {
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Executing Compliance Engine...
+                    Executing Compliance Engine for {selectedAts}...
                   </>
                 ) : (
-                  "Execute Algorithmic Audit"
+                  `Execute Algorithmic Audit for ${selectedAts}`
                 )}
               </button>
             </div>
