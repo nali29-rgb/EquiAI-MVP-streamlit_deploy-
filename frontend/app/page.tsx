@@ -124,9 +124,8 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Tenant and System Status State
-  const [tenantName, setTenantName] = useState("Acme Legal Ops");
-  const [activeRiskCount, setActiveRiskCount] = useState("1 Risk Active");
+  // Tenant Name State
+  const [tenantName] = useState("Acme Legal Ops");
 
   // Persistence: Restore tab, report, and ATS state on reload
   useEffect(() => {
@@ -255,15 +254,9 @@ export default function App() {
 
           <div className="flex items-center gap-3">
             {/* Tenant Name Badge */}
-            <div className="hidden sm:flex items-center gap-2 bg-slate-100/80 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700">
+            <div className="flex items-center gap-2 bg-slate-100/80 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               Tenant: <strong className="text-slate-900">{tenantName}</strong>
-            </div>
-
-            {/* Risk Status Summary Badge */}
-            <div className="bg-brand-coral/10 text-brand-coral px-3.5 py-2 rounded-xl border border-brand-coral/20 text-xs font-bold flex items-center gap-2 shadow-xs">
-              <AlertTriangle className="w-4 h-4 shrink-0" /> 
-              <span>{activeRiskCount}</span>
             </div>
           </div>
         </div>
