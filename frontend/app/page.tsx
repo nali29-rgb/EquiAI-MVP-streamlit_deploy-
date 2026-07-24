@@ -19,22 +19,23 @@ import {
 } from "lucide-react";
 
 // Official EquiAudit Logo with Next.js Optimized Image
+// Official EquiAudit Logo (Bigger & Pink Background Removed via CSS Filters)
 function EquiAuditLogo() {
   return (
     <div className="flex items-center gap-3 select-none">
       <Image 
         src="/logo.png" 
         alt="EquiAudit Logo" 
-        width={120}
-        height={40}
+        width={200}
+        height={70}
         priority
-        className="h-10 w-auto object-contain mix-blend-multiply" 
+        className="h-16 w-auto object-contain mix-blend-multiply contrast-125 brightness-105" 
       />
       <div className="flex items-baseline">
-        <span className="text-2xl font-sans tracking-tight text-slate-900 font-light">
+        <span className="text-3xl font-sans tracking-tight text-slate-900 font-light">
           Equi<span className="font-bold text-slate-900">Audit</span>
         </span>
-        <span className="ml-1.5 text-[10px] font-black text-[#6B82C1] tracking-wider uppercase bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200/60">
+        <span className="ml-1.5 text-xs font-black text-[#6B82C1] tracking-wider uppercase bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
           AI
         </span>
       </div>
