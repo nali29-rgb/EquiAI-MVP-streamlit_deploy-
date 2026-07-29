@@ -11,7 +11,7 @@ app = FastAPI(
 # Enable CORS so your Next.js frontend can make requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust to specific domain in production if needed
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,9 +23,7 @@ def health_check():
     """Health check endpoint for Render monitoring."""
     return {"status": "online", "service": "EquiAudit Compliance Engine"}
 
-# Temporary debug print at file level
-print("--- ENVIRONMENT KEYS DETECTED ---")
-print([k for k in os.environ.keys() if "OPENAI" in k])
+
 @app.post("/api/audit")
 async def run_audit(
     file: UploadFile = File(...),
@@ -48,7 +46,8 @@ async def run_audit(
         contents = await file.read()
         csv_text = contents.decode("utf-8", errors="ignore")
 
-        if not csv_text.trim():
+        # Fixed Python string method (.strip() instead of .trim())
+        if not csv_text.strip():
             return {"success": False, "error": "Uploaded CSV file is empty."}
 
         # 3. Initialize OpenAI client safely
@@ -75,7 +74,7 @@ Formatting Requirements:
         sample_csv = csv_text[:20000]
 
         response = client.chat.completions.create(
-            model="gpt-4o",  # You can switch to "gpt-4o-mini" if preferred
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {
