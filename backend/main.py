@@ -8,6 +8,7 @@ app = FastAPI(
     description="EEOC & Algorithmic Bias Compliance Audit Engine"
 )
 
+# Enable CORS for Next.js / Streamlit frontend integration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,6 +20,7 @@ app.add_middleware(
 
 @app.get("/")
 def health_check():
+    """Health check endpoint for Render monitoring."""
     return {"status": "online", "service": "EquiAudit Compliance Engine"}
 
 
@@ -27,6 +29,10 @@ async def run_audit(
     file: UploadFile = File(...),
     target_ats: str = Form("Greenhouse")
 ):
+    """
+    Executes an algorithmic bias audit on the uploaded candidate dataset CSV
+    for the specified ATS platform.
+    """
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         return {
@@ -38,41 +44,46 @@ async def run_audit(
         contents = await file.read()
         csv_text = contents.decode("utf-8", errors="ignore")
 
+        # Python string check (.strip() handles whitespace correctly)
         if not csv_text.strip():
             return {"success": False, "error": "Uploaded CSV file is empty."}
 
         client = openai.OpenAI(api_key=api_key)
 
-        # 🎯 Rigorous, Platform-Native & Actionable Audit Prompt
+        # 🎯 High-Precision Actionable System Prompt
         system_prompt = f"""
-You are an expert EEOC compliance officer and algorithmic bias auditor for hiring systems.
-Analyze the provided candidate dataset for disparate impact and compliance risks.
+You are an expert EEOC Title VII and NYC Local Law 144 compliance auditor specializing in automated employment decision tools (AEDTs) and applicant tracking system (ATS) architecture for **{target_ats}**.
 
-STRICT FORMATTING & NAMING RULES:
-1. ATS SPECIFICITY: You MUST explicitly refer to the user's system as '{target_ats}' throughout the entire report.
-   - NEVER use generic phrases such as "target ATS", "the platform", "the selected system", or "your ATS".
-   - Example: Say "Log into Greenhouse" NOT "Log into the target ATS platform".
+Analyze the candidate CSV dataset and generate an actionable, audit-ready compliance report specifically tailored to the workflow and configuration settings of **{target_ats}**.
 
-2. UI ACCURACY FOR {target_ats.upper()}:
-   - Ensure all step-by-step remediation workflows reflect the exact navigation paths, menu labels, and features unique to {target_ats}.
-   - If generating steps for Greenhouse: Use Greenhouse terminology (e.g., Jobs > Job Setup > Job Posts > Application Rules; Job Setup > Scorecard).
+CRITICAL AUDIT MANDATES:
+1. STRICTLY NO GENERIC BOILERPLATE: Do NOT output generic consulting advice like "conduct a review", "audit regularly", "implement bias protocols", or "introduce diverse datasets".
+2. ATS PLATFORM NATIVE: Cite exact configuration menus, setting paths, stage rules, and screening modules native to **{target_ats}** (e.g., for Greenhouse: "Stage Rules & Auto-Rejection Knockout Questions", for Workday: "Candidate Match & Job Profile Weighting Filters", for Lever: "Fast-Track Rules", for SmartRecruiters: "Screening Scorecards").
+3. HARD COMPUTATIONS: Perform actual numerical calculations from the CSV dataset (candidate totals, advancement counts, selection rates per demographic group, EEOC 4/5ths impact ratios).
+4. DIRECT ACTIONABLE STEPS: Every fix must be a direct administrative command that an HR tech or recruiting operations admin can execute immediately inside **{target_ats}**.
 
-3. REPORT STRUCTURE:
-   - Begin with an "Audit Protocol Note:" banner summarizing the findings.
-   - Provide 4 distinct, actionable executive modules separated by Markdown headers (`#`):
-     1. Funnel & Impact Ratio Breakdown
-     2. Root Cause Diagnosis
-     3. Systemic Fix Playbook (Step-by-step UI actions)
-     4. Legal & Data Retention Plan
-"""
+REQUIRED OUTPUT FORMAT:
 
-        user_prompt = f"""
-Target Applicant Tracking System: {target_ats}
+Start with:
+Audit Protocol Note: [A 2-3 sentence executive summary evaluating Title VII and NYC Local Law 144 legal exposure, citing the exact computed adverse impact ratio for the affected demographic group on {target_ats}.]
 
-Candidate Dataset (CSV Snippet):
-{csv_text[:3000]}
+Then provide exactly 4 structured sections using headers (`###`):
 
-Generate the complete audit report adhering strictly to the system prompt guidelines.
+### 1. Funnel & Disparate Impact Analysis
+- Calculate exact applicant headcounts, advancement numbers, and selection rates across demographic groups present in the CSV.
+- Compute the EEOC Adverse Impact Ratio = (Selection Rate of Protected Group) / (Selection Rate of Benchmark Group).
+- Explicitly state whether the calculated ratio breaches the 0.80 federal threshold under the EEOC 4/5ths rule.
+
+### 2. Root Cause & Feature Weight Diagnosis
+- Pinpoint specific candidate features, screening thresholds, or qualifications in the CSV causing the disparity.
+- Detail how **{target_ats}**'s automated screening filters or scoring mechanisms amplify this bias against the protected demographic group.
+
+### 3. Systemic Mitigation Playbook
+- Provide 3-4 concrete, numbered administrative fixes directly executable within the **{target_ats}** platform interface.
+- Format each as a direct step-by-step action (e.g., "1. In {target_ats} Admin -> Navigate to Requisition Screening Rules -> Modify or disable automated knockout logic on Feature X").
+
+### 4. Legal Retention & Defense Strategy
+- Outline exact record-keeping mandates, bias audit logging requirements, and NYC LL144 publication schedules required for **{target_ats}**.
 """
 
         sample_csv = csv_text[:25000]
@@ -105,5 +116,5 @@ Generate the complete audit report adhering strictly to the system prompt guidel
     except Exception as e:
         return {
             "success": False,
-            "error": f"An unexpected error occurred: {str(e)}"
+            "error": f"An unexpected error occurred during execution: {str(e)}"
         }
