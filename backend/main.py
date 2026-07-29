@@ -1,88 +1,104 @@
 import os
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 import openai
 
-app = FastAPI()
+app = FastAPI(
+    title="EquiAudit Engine API",
+    description="EEOC & Algorithmic Bias Compliance Audit Engine"
+)
 
-# Enable CORS for Next.js frontend
+# Enable CORS so your Next.js frontend can make requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Adjust to specific domain in production if needed
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-# Safely initialize OpenAI without crashing server startup if key is missing
-api_key = os.environ.get("OPENAI_API_KEY", "")
-client = openai.OpenAI(api_key=api_key) if api_key else None
+@app.get("/")
+def health_check():
+    """Health check endpoint for Render monitoring."""
+    return {"status": "online", "service": "EquiAudit Compliance Engine"}
+
 
 @app.post("/api/audit")
-async def execute_audit(
+async def run_audit(
     file: UploadFile = File(...),
-    target_ats: str = Form(...)
+    target_ats: str = Form("Greenhouse")
 ):
+    """
+    Executes an algorithmic bias audit on the uploaded candidate dataset CSV
+    for the specified ATS platform.
+    """
+    # 1. Dynamically retrieve the API key per request
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        return {
+            "success": False,
+            "error": "OPENAI_API_KEY is missing from Render environment variables."
+        }
+
     try:
-        # Read the uploaded CSV dataset
-        csv_bytes = await file.read()
-        csv_text = csv_bytes.decode("utf-8")
+        # 2. Read and decode the CSV dataset
+        contents = await file.read()
+        csv_text = contents.decode("utf-8", errors="ignore")
 
-        # -------------------------------------------------------------
-        # PROMPT FIX: Force explicit ATS naming & UI accuracy
-        # -------------------------------------------------------------
+        if not csv_text.trim():
+            return {"success": False, "error": "Uploaded CSV file is empty."}
+
+        # 3. Initialize OpenAI client safely
+        client = openai.OpenAI(api_key=api_key)
+
+        # 4. Craft executive compliance prompt
         system_prompt = f"""
-You are an expert EEOC compliance officer and algorithmic bias auditor for hiring systems.
-Analyze the provided candidate dataset for disparate impact and compliance risks.
+You are an expert EEOC & Algorithmic Bias Compliance Auditor specializing in Title VII regulations, NYC Local Law 144, and automated screening rule evaluations for the {target_ats} platform.
 
-STRICT FORMATTING & NAMING RULES:
-1. ATS SPECIFICITY: You MUST explicitly refer to the user's system as '{target_ats}' throughout the entire report.
-   - NEVER use generic phrases such as "target ATS", "the platform", "the selected system", or "your ATS".
-   - Example: Say "Log into Greenhouse" NOT "Log into the target ATS platform".
+Analyze the provided candidate dataset CSV and construct a structured compliance audit report.
 
-2. UI ACCURACY FOR {target_ats.upper()}:
-   - Ensure all step-by-step remediation workflows reflect the exact navigation paths, menu labels, and features unique to {target_ats}.
-   - If generating steps for Greenhouse: Use Greenhouse terminology (e.g., Jobs > Job Setup > Job Posts > Application Rules; Job Setup > Scorecard).
-
-3. REPORT STRUCTURE:
-   - Begin with an "Audit Protocol Note:" banner summarizing the findings.
-   - Provide 4 distinct, actionable executive modules separated by Markdown headers (`#`):
-     1. Funnel & Impact Ratio Breakdown
-     2. Root Cause Diagnosis
-     3. Systemic Fix Playbook (Step-by-step UI actions)
-     4. Legal & Data Retention Plan
+Formatting Requirements:
+1. Start with an "Audit Protocol Note:" paragraph summarizing the overall compliance state and legal exposure level.
+2. Provide exactly 4 structured sections starting with headers (`###`):
+   - ### 1. Funnel & Disparate Impact Analysis
+   - ### 2. Root Cause & Feature Weight Diagnosis
+   - ### 3. Systemic Mitigation Playbook
+   - ### 4. Legal Retention & Defense Strategy
+3. Calculate/evaluate the EEOC 4/5ths rule (0.80 adverse impact ratio threshold) across candidate demographic groups.
+4. Call out specific screening triggers or auto-rejection mechanisms within the {target_ats} workflow.
 """
 
-        user_prompt = f"""
-Target Applicant Tracking System: {target_ats}
+        # Truncate text if extremely large to fit standard token limits
+        sample_csv = csv_text[:20000]
 
-Candidate Dataset (CSV Snippet):
-{csv_text[:3000]}
-
-Generate the complete audit report adhering strictly to the system prompt guidelines.
-"""
-
-        # Call OpenAI LLM (or your configured model)
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4o",  # You can switch to "gpt-4o-mini" if preferred
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
+                {
+                    "role": "user",
+                    "content": f"Target ATS: {target_ats}\n\nCandidate CSV Dataset:\n{sample_csv}"
+                }
             ],
             temperature=0.2
         )
 
-        report = response.choices[0].message.content
+        report_content = response.choices[0].message.content
+        return {"success": True, "report": report_content}
 
-        return {
-            "success": True,
-            "report": report
-        }
-
-    except Exception as e:
-        print(f"Error during audit execution: {e}")
+    except openai.AuthenticationError:
         return {
             "success": False,
-            "error": str(e)
+            "error": "Invalid OpenAI API key. Check your OPENAI_API_KEY variable in Render."
+        }
+    except openai.RateLimitError:
+        return {
+            "success": False,
+            "error": "OpenAI API quota exceeded or insufficient account balance. Please check your OpenAI billing."
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"An unexpected error occurred during execution: {str(e)}"
         }
