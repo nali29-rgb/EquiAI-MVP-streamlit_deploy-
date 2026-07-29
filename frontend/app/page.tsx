@@ -319,7 +319,6 @@ export default function App() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-blue/10 text-brand-blue text-xs font-extrabold uppercase tracking-wider border border-brand-blue/20">
                   <Activity className="w-3.5 h-3.5" /> Real-Time Engine Active
                 </div>
-                {/* Updated Catchy Hero Headline */}
                 <h2 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900">
                   Algorithmic Integrity. Ironclad Compliance.
                 </h2>
@@ -348,19 +347,19 @@ export default function App() {
                   <FileCheck2 className="w-5 h-5 text-brand-blue" />
                 </div>
                 <div className="text-4xl font-black text-slate-900 tracking-tight">84%</div>
-                <div className="flex items-center text-xs font-bold text-emerald-600 mt-3 bg-emerald-50 w-fit px-2.5 py-1 rounded-lg border border-emerald-200/60">
+                <div className="flex items-center text-xs font-bold text-emerald-600 mt-3">
                   <ArrowUpRight className="w-3.5 h-3.5 mr-0.5" /> +4% vs last audit
                 </div>
               </div>
 
-              {/* 2. Active Exposure (RED - Black Text for "1 Stage") */}
+              {/* 2. Active Exposure (RED) */}
               <div className="bg-white p-6 rounded-3xl border-t-4 border-t-brand-coral border-x border-b border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-xs font-black uppercase tracking-wider text-slate-400">Active Exposure</span>
                   <AlertTriangle className="w-5 h-5 text-brand-coral" />
                 </div>
                 <div className="text-4xl font-black text-slate-900 tracking-tight">1 Stage</div>
-                <div className="text-xs font-extrabold text-brand-coral mt-3 bg-brand-coral/10 w-fit px-2.5 py-1 rounded-lg border border-brand-coral/20">
+                <div className="text-xs font-extrabold text-brand-coral mt-3">
                   Screening Auto-Reject Failure
                 </div>
               </div>
@@ -372,7 +371,7 @@ export default function App() {
                   <Layers className="w-5 h-5 text-brand-blue" />
                 </div>
                 <div className="text-4xl font-black text-slate-900 tracking-tight">0.33</div>
-                <div className="text-xs font-extrabold text-red-600 mt-3 bg-red-50 w-fit px-2.5 py-1 rounded-lg border border-red-200/60">
+                <div className="text-xs font-extrabold text-red-600 mt-3">
                   Below 0.80 Federal Parity
                 </div>
               </div>
@@ -384,7 +383,7 @@ export default function App() {
                   <Database className="w-5 h-5 text-brand-coral" />
                 </div>
                 <div className="text-2xl font-black text-slate-900 tracking-tight mt-1">{selectedAts}</div>
-                <div className="text-xs font-extrabold text-brand-blue mt-3 bg-brand-canvas w-fit px-2.5 py-1 rounded-lg border border-brand-blue/20">
+                <div className="text-xs font-extrabold text-brand-blue mt-3">
                   Auto-Sync Enabled
                 </div>
               </div>
