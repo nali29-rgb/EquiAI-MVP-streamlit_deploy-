@@ -3,3 +3,4 @@ uvicorn==0.28.0
 pandas
 requests
 python-multipart
+openai
