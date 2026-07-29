@@ -45,35 +45,34 @@ async def run_audit(
 
         # 🎯 Rigorous, Platform-Native & Actionable Audit Prompt
         system_prompt = f"""
-You are an elite EEOC Title VII and NYC Local Law 144 Algorithmic Compliance Auditor. 
-Your task is to perform an audit-grade evaluation of the provided candidate dataset CSV for the **{target_ats}** platform.
+You are an expert EEOC compliance officer and algorithmic bias auditor for hiring systems.
+Analyze the provided candidate dataset for disparate impact and compliance risks.
 
-STRICT AUDIT RULES:
-- DO NOT use generic boilerplate advice (e.g., "conduct a review", "implement bias detection", "introduce diverse datasets").
-- DO provide exact, step-by-step administrative actions native to **{target_ats}** UI workflows, stage settings, and knockout rules.
-- DO perform exact numerical calculations based on the dataset (pass rates, EEOC 4/5ths Impact Ratios).
+STRICT FORMATTING & NAMING RULES:
+1. ATS SPECIFICITY: You MUST explicitly refer to the user's system as '{target_ats}' throughout the entire report.
+   - NEVER use generic phrases such as "target ATS", "the platform", "the selected system", or "your ATS".
+   - Example: Say "Log into Greenhouse" NOT "Log into the target ATS platform".
 
-OUTPUT FORMATTING REQUIREMENTS:
+2. UI ACCURACY FOR {target_ats.upper()}:
+   - Ensure all step-by-step remediation workflows reflect the exact navigation paths, menu labels, and features unique to {target_ats}.
+   - If generating steps for Greenhouse: Use Greenhouse terminology (e.g., Jobs > Job Setup > Job Posts > Application Rules; Job Setup > Scorecard).
 
-1. Start immediately with:
-Audit Protocol Note: [Provide a 2-3 sentence legal exposure summary citing Title VII, NYC Local Law 144, calculated impact ratios, and platform-specific risk for {target_ats}.]
+3. REPORT STRUCTURE:
+   - Begin with an "Audit Protocol Note:" banner summarizing the findings.
+   - Provide 4 distinct, actionable executive modules separated by Markdown headers (`#`):
+     1. Funnel & Impact Ratio Breakdown
+     2. Root Cause Diagnosis
+     3. Systemic Fix Playbook (Step-by-step UI actions)
+     4. Legal & Data Retention Plan
+"""
 
-2. Follow with EXACTLY 4 structured sections using markdown headers (`###`):
+        user_prompt = f"""
+Target Applicant Tracking System: {target_ats}
 
-### 1. Funnel & Disparate Impact Analysis
-- Calculate exact candidate counts, advancement counts, and selection rates across demographic groups from the CSV.
-- Display the computed EEOC Impact Ratio (Protected Rate / Benchmark Rate). State whether it breaches the federal 0.80 (4/5ths rule) threshold.
+Candidate Dataset (CSV Snippet):
+{csv_text[:3000]}
 
-### 2. Root Cause & Feature Weight Diagnosis
-- Identify the exact feature weighting or screening rule inside **{target_ats}** triggering the disparity (e.g., automated knockout questions, hard-coded experience filters, candidate match scoring thresholds).
-- Explain precisely how this feature disproportionately penalizes protected candidate groups.
-
-### 3. Systemic Mitigation Playbook
-- Provide 3-4 concrete, step-by-step configuration fixes directly inside **{target_ats}** settings.
-- Format as direct actionable commands (e.g., "1. In {target_ats} Admin -> Navigate to Screening Rules -> Disable automatic rejection on Question X").
-
-### 4. Legal Retention & Defense Strategy
-- Outline specific audit logging, candidate data retention schedules, and NYC LL144 compliance reporting requirements for **{target_ats}**.
+Generate the complete audit report adhering strictly to the system prompt guidelines.
 """
 
         sample_csv = csv_text[:25000]
