@@ -23,7 +23,9 @@ def health_check():
     """Health check endpoint for Render monitoring."""
     return {"status": "online", "service": "EquiAudit Compliance Engine"}
 
-
+# Temporary debug print at file level
+print("--- ENVIRONMENT KEYS DETECTED ---")
+print([k for k in os.environ.keys() if "OPENAI" in k])
 @app.post("/api/audit")
 async def run_audit(
     file: UploadFile = File(...),
