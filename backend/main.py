@@ -8,7 +8,6 @@ app = FastAPI(
     description="EEOC & Algorithmic Bias Compliance Audit Engine"
 )
 
-# Enable CORS so your Next.js frontend can make requests
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,7 +19,6 @@ app.add_middleware(
 
 @app.get("/")
 def health_check():
-    """Health check endpoint for Render monitoring."""
     return {"status": "online", "service": "EquiAudit Compliance Engine"}
 
 
@@ -29,11 +27,6 @@ async def run_audit(
     file: UploadFile = File(...),
     target_ats: str = Form("Greenhouse")
 ):
-    """
-    Executes an algorithmic bias audit on the uploaded candidate dataset CSV
-    for the specified ATS platform.
-    """
-    # 1. Dynamically retrieve the API key per request
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         return {
@@ -42,36 +35,48 @@ async def run_audit(
         }
 
     try:
-        # 2. Read and decode the CSV dataset
         contents = await file.read()
         csv_text = contents.decode("utf-8", errors="ignore")
 
-        # Fixed Python string method (.strip() instead of .trim())
         if not csv_text.strip():
             return {"success": False, "error": "Uploaded CSV file is empty."}
 
-        # 3. Initialize OpenAI client safely
         client = openai.OpenAI(api_key=api_key)
 
-        # 4. Craft executive compliance prompt
+        # 🎯 Rigorous, Platform-Native & Actionable Audit Prompt
         system_prompt = f"""
-You are an expert EEOC & Algorithmic Bias Compliance Auditor specializing in Title VII regulations, NYC Local Law 144, and automated screening rule evaluations for the {target_ats} platform.
+You are an elite EEOC Title VII and NYC Local Law 144 Algorithmic Compliance Auditor. 
+Your task is to perform an audit-grade evaluation of the provided candidate dataset CSV for the **{target_ats}** platform.
 
-Analyze the provided candidate dataset CSV and construct a structured compliance audit report.
+STRICT AUDIT RULES:
+- DO NOT use generic boilerplate advice (e.g., "conduct a review", "implement bias detection", "introduce diverse datasets").
+- DO provide exact, step-by-step administrative actions native to **{target_ats}** UI workflows, stage settings, and knockout rules.
+- DO perform exact numerical calculations based on the dataset (pass rates, EEOC 4/5ths Impact Ratios).
 
-Formatting Requirements:
-1. Start with an "Audit Protocol Note:" paragraph summarizing the overall compliance state and legal exposure level.
-2. Provide exactly 4 structured sections starting with headers (`###`):
-   - ### 1. Funnel & Disparate Impact Analysis
-   - ### 2. Root Cause & Feature Weight Diagnosis
-   - ### 3. Systemic Mitigation Playbook
-   - ### 4. Legal Retention & Defense Strategy
-3. Calculate/evaluate the EEOC 4/5ths rule (0.80 adverse impact ratio threshold) across candidate demographic groups.
-4. Call out specific screening triggers or auto-rejection mechanisms within the {target_ats} workflow.
+OUTPUT FORMATTING REQUIREMENTS:
+
+1. Start immediately with:
+Audit Protocol Note: [Provide a 2-3 sentence legal exposure summary citing Title VII, NYC Local Law 144, calculated impact ratios, and platform-specific risk for {target_ats}.]
+
+2. Follow with EXACTLY 4 structured sections using markdown headers (`###`):
+
+### 1. Funnel & Disparate Impact Analysis
+- Calculate exact candidate counts, advancement counts, and selection rates across demographic groups from the CSV.
+- Display the computed EEOC Impact Ratio (Protected Rate / Benchmark Rate). State whether it breaches the federal 0.80 (4/5ths rule) threshold.
+
+### 2. Root Cause & Feature Weight Diagnosis
+- Identify the exact feature weighting or screening rule inside **{target_ats}** triggering the disparity (e.g., automated knockout questions, hard-coded experience filters, candidate match scoring thresholds).
+- Explain precisely how this feature disproportionately penalizes protected candidate groups.
+
+### 3. Systemic Mitigation Playbook
+- Provide 3-4 concrete, step-by-step configuration fixes directly inside **{target_ats}** settings.
+- Format as direct actionable commands (e.g., "1. In {target_ats} Admin -> Navigate to Screening Rules -> Disable automatic rejection on Question X").
+
+### 4. Legal Retention & Defense Strategy
+- Outline specific audit logging, candidate data retention schedules, and NYC LL144 compliance reporting requirements for **{target_ats}**.
 """
 
-        # Truncate text if extremely large to fit standard token limits
-        sample_csv = csv_text[:20000]
+        sample_csv = csv_text[:25000]
 
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -79,10 +84,10 @@ Formatting Requirements:
                 {"role": "system", "content": system_prompt},
                 {
                     "role": "user",
-                    "content": f"Target ATS: {target_ats}\n\nCandidate CSV Dataset:\n{sample_csv}"
+                    "content": f"Target ATS Platform: {target_ats}\n\nCandidate CSV Dataset:\n{sample_csv}"
                 }
             ],
-            temperature=0.2
+            temperature=0.1
         )
 
         report_content = response.choices[0].message.content
@@ -96,10 +101,10 @@ Formatting Requirements:
     except openai.RateLimitError:
         return {
             "success": False,
-            "error": "OpenAI API quota exceeded or insufficient account balance. Please check your OpenAI billing."
+            "error": "OpenAI API quota exceeded or insufficient account balance. Check your OpenAI billing."
         }
     except Exception as e:
         return {
             "success": False,
-            "error": f"An unexpected error occurred during execution: {str(e)}"
+            "error": f"An unexpected error occurred: {str(e)}"
         }
