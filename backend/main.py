@@ -14,8 +14,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize OpenAI Client
-client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+# Safely initialize OpenAI without crashing server startup if key is missing
+api_key = os.environ.get("OPENAI_API_KEY", "")
+client = openai.OpenAI(api_key=api_key) if api_key else None
 
 @app.post("/api/audit")
 async def execute_audit(
