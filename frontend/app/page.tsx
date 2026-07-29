@@ -319,8 +319,9 @@ export default function App() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-blue/10 text-brand-blue text-xs font-extrabold uppercase tracking-wider border border-brand-blue/20">
                   <Activity className="w-3.5 h-3.5" /> Real-Time Engine Active
                 </div>
+                {/* Updated Catchy Hero Headline */}
                 <h2 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900">
-                  EEOC & Algorithmic Bias Compliance
+                  Algorithmic Integrity. Ironclad Compliance.
                 </h2>
                 <p className="text-slate-600 text-sm font-medium leading-relaxed">
                   Continuous multi-jurisdictional monitoring across candidate screening pipelines, ATS rules, and scoring algorithms.
