@@ -17,14 +17,6 @@ EquiAudit AI was built following primary market research and interviews with HR 
 
 ---
 
-## 🎬 Product Demo Video
-
-[![EquiAudit AI Demo Video](https://img.youtube.com/vi/YOUR_YOUTUBE_ID_HERE/maxresdefault.jpg)](https://www.loom.com/share/YOUR_LOOM_LINK_HERE)
-
-> 📹 **[Click here to watch the full product walkthrough video on Loom / YouTube](https://www.loom.com/share/YOUR_LOOM_LINK_HERE)**
-
----
-
 ## 📌 Problem Statement & Overview
 Modern companies rely heavily on automated candidate screening tools embedded inside Applicant Tracking Systems (e.g., Workday, Greenhouse, Lever). However, unmonitored algorithmic scoring, automated knockout filters, and experience thresholds often introduce illegal disparate impact against protected demographic groups.
 
@@ -113,7 +105,7 @@ uvicorn main:app --reload --port 8000
 ## 👤 Author & Acknowledgments
 
 ### 👨‍💻 Author & Technical Lead
-* **Technical Lead & Full-Stack Engineer**: [Your Name](https://github.com/nali29-rgb)
+* **Technical Lead & Full-Stack Engineer**: [Nabeela Ali](https://github.com/nali29-rgb)
   * Architected full-stack compliance pipeline (Next.js, FastAPI, OpenAI GPT-4o).
   * Led product development, data pipeline design, and ATS remediation integration.
 
