@@ -107,6 +107,7 @@ export OPENAI_API_KEY="your-openai-api-key"
 # Run FastAPI server
 uvicorn main:app --reload --port 8000
 
+---
 
 ## 👤 Author & Acknowledgments
 
