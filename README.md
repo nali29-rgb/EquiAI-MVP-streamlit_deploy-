@@ -68,8 +68,8 @@ graph TD
     
     LLM -->|"6. Return ATS Remediation Plan"| Backend
     Backend -->|"7. Return JSON Payload"| Frontend
-    Frontend -->|"8. Render Compliance Dashboard"| Client ```
-
+    Frontend -->|"8. Render Compliance Dashboard"| Client
+```
 
 ---
 
