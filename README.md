@@ -104,7 +104,7 @@ uvicorn main:app --reload --port 8000
 
 ## 👤 Author & Acknowledgments
 
-### 👨‍💻 Author & Technical Lead
+### Technical Lead
 * **Technical Lead & Full-Stack Engineer**: [Nabeela Ali](https://github.com/nali29-rgb)
   * Architected full-stack compliance pipeline (Next.js, FastAPI, OpenAI GPT-4o).
   * Led product development, data pipeline design, and ATS remediation integration.
