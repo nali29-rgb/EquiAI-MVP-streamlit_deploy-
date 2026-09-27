@@ -1,9 +1,12 @@
 import os
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 import openai
 
-app = FastAPI()
+app = FastAPI(
+    title="EquiAudit Engine API",
+    description="EEOC & Algorithmic Bias Compliance Audit Engine"
+)
 
 # Enable CORS for Next.js frontend
 app.add_middleware(
@@ -14,88 +17,99 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize OpenAI Client
-client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+@app.get("/")
+def health_check():
+    """Health check endpoint for Render monitoring."""
+    return {"status": "online", "service": "EquiAudit Compliance Engine"}
+
 
 @app.post("/api/audit")
-async def execute_audit(
+async def run_audit(
     file: UploadFile = File(...),
-    target_ats: str = Form(...)
+    target_ats: str = Form("Greenhouse")
 ):
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        return {
+            "success": False,
+            "error": "OPENAI_API_KEY is missing from Render environment variables."
+        }
+
     try:
-        # Read the uploaded CSV dataset
-        csv_bytes = await file.read()
-        csv_text = csv_bytes.decode("utf-8")
+        # Read and parse CSV file
+        contents = await file.read()
+        csv_text = contents.decode("utf-8", errors="ignore")
 
-        # -------------------------------------------------------------
-        # PROMPT FIX: Force explicit ATS naming & UI accuracy
-        # -------------------------------------------------------------
-        system_prompt = (
-        f"You are an elite enterprise HR Systems Auditor and Lead Compliance Engineer for {ats_system}.\n"
-        "Analyze the provided demographic hiring funnel metrics and generate an unyielding, definitive corporate audit report.\n\n"
-        
-        "🚫 CRITICAL EXECUTION RULES:\n"
-        "1. NO SPECULATION / NO BANNED WORDS: Speak in absolute, definitive structural facts. Do not use: 'could', 'may', 'might', 'perhaps', 'if', 'for example'.\n"
-        "2. NO GENERIC HR LECTURES: Do not suggest bias training or 'reviewing' things. Focus purely on technical platform configuration changes.\n"
-        "3. REAL-WORLD GREENHOUSE ARCHITECTURE ONLY: Reference Custom Application Questions, Auto-Reject Rules, and Scorecard Focus Attributes.\n"
-        "4. CHOOSE ONE SPECIFIC CULPRIT: Declare definitively that a rigid 'Continuous Employment History' Auto-Reject rule is the structural culprit.\n"
-        "5. UNIVERSAL COMPLIANCE MANDATE: You must start the entire report with an explicit note declaring that a multi-state legal approach has been taken for universal compliance.\n\n"
-        
-        "Generate the report using this exact Markdown layout and tone:"
-    )
-    
-    user_prompt = (
-        f"Context: The following math metrics show a severe screening pipeline drop-off for women.\n"
-        f"Metrics: {funnel_metrics}\n\n"
-        f"Generate the {ats_system} audit report following this exact structure:\n\n"
-        
-        "> **Audit Protocol Note:** A multi-state legal approach has been taken for universal compliance across all active federal and state regulatory jurisdictions.\n\n"
-        "---\n\n"
-        
-        "## 1. Funnel Leak & Adverse Impact Assessment\n"
-        "- **Identified Failure Stage:** [State the stage]\n"
-        "- **EEOC Impact Ratio:** [State the exact math result]\n"
-        "- **Legal Compliance Posture:** NON-COMPLIANT. This falls below the federal 0.80 standard, establishing prima facie Adverse Impact.\n\n"
-        "---\n\n"
-        "## 2. Multi-Jurisdictional Risk Diagnosis (The 'Why')\n"
-        f"State definitively that the screening failure is caused by a custom question filtering out non-linear career paths. "
-        "Directly link this technical setup to liability under Illinois Proxy Rules (discriminating via the proxy of career continuity) "
-        "and California CRD Frameworks (which mandate immediate employer liability for automated vendor filtering systems).\n\n"
-        "---\n\n"
-        "## 3. Targeted Systemic Fixes (Platform Re-Configuration)\n"
-        "Provide an explicit, real-world, click-by-click manual to turn off or lower the weighting of this rule. Use this exact syntax:\n"
-        "> **Step 1:** Log into Greenhouse, click **Jobs** from the top navigation bar, and select this specific Job Requisition.\n"
-        "> **Step 2:** Click **Job Setup** on the left-hand menu panel, then click **Job Posts**.\n"
-        "> **Step 3:** Scroll to the active post and click **Manage Rules** under the Application Rules column.\n"
-        "> **Step 4:** Locate the **Auto-Reject Rule** tied to the custom question 'Continuous Employment History / Career Gaps'.\n"
-        "> **Step 5:** Click the **Delete (Trash Can Icon)** to completely remove the automated knockout constraint.\n"
-        "> **Step 6:** Navigate to **Job Setup > Scorecard**, locate the 'Linear Career Progression' attribute, and toggle its focus weight from **Essential** to **Optional**.\n\n"
-        "*Data Retention Directive:* Under California CRD rules, export this configuration log and preserve all screening metrics for a mandatory minimum of 4 years.\n\n"
-        "---\n\n"
-        "## 4. Immediate Operational Recovery Plan\n"
-        "Provide one concrete manual extraction step to pull back the candidates falsely rejected by this specific rule over the last 14 days without using demographic filters."
-    )
+        if not csv_text.strip():
+            return {"success": False, "error": "Uploaded CSV file is empty."}
 
-        # Call OpenAI LLM (or your configured model)
+        client = openai.OpenAI(api_key=api_key)
+
+        system_prompt = f"""
+You are an expert EEOC Title VII and NYC Local Law 144 compliance auditor specializing in automated employment decision tools (AEDTs) and applicant tracking system (ATS) architecture for **{target_ats}**.
+
+Analyze the candidate CSV dataset and generate an actionable, audit-ready compliance report specifically tailored to the workflow and configuration settings of **{target_ats}**.
+
+CRITICAL AUDIT MANDATES:
+1. STRICTLY NO GENERIC BOILERPLATE: Do NOT output generic consulting advice like "conduct a review", "audit regularly", "implement bias protocols", or "introduce diverse datasets".
+2. ATS PLATFORM NATIVE: Cite exact configuration menus, setting paths, stage rules, and screening modules native to **{target_ats}**.
+3. HARD COMPUTATIONS: Perform actual numerical calculations from the CSV dataset (candidate totals, advancement counts, selection rates per demographic group, EEOC 4/5ths impact ratios).
+4. DIRECT ACTIONABLE STEPS: Every fix must be a direct administrative command executable inside **{target_ats}**.
+
+REQUIRED OUTPUT FORMAT:
+
+Start with:
+Audit Protocol Note: [A 2-3 sentence executive summary evaluating Title VII and NYC Local Law 144 legal exposure, citing the exact computed adverse impact ratio for the affected demographic group on {target_ats}.]
+
+Then provide exactly 4 structured sections using headers (`###`):
+
+### 1. Funnel & Disparate Impact Analysis
+- Calculate exact applicant headcounts, advancement numbers, and selection rates across demographic groups present in the CSV.
+- Compute the EEOC Adverse Impact Ratio = (Selection Rate of Protected Group) / (Selection Rate of Benchmark Group).
+- Explicitly state whether the calculated ratio breaches the 0.80 federal threshold under the EEOC 4/5ths rule.
+
+### 2. Root Cause & Feature Weight Diagnosis
+- Pinpoint specific candidate features, screening thresholds, or qualifications in the CSV causing the disparity.
+- Detail how **{target_ats}**'s automated screening filters or scoring mechanisms amplify this bias against the protected demographic group.
+
+### 3. Systemic Mitigation Playbook
+- Provide 3-4 concrete, numbered administrative fixes directly executable within the **{target_ats}** platform interface.
+- Format each as a direct step-by-step action (e.g., "1. In {target_ats} Admin -> Navigate to Requisition Screening Rules -> Modify or disable automated knockout logic on Feature X").
+
+### 4. Legal Retention & Defense Strategy
+- Outline exact record-keeping mandates, bias audit logging requirements, and NYC LL144 publication schedules required for **{target_ats}**.
+"""
+
+        sample_csv = csv_text[:25000]
+
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
+                {
+                    "role": "user",
+                    "content": f"Target ATS Platform: {target_ats}\n\nCandidate CSV Dataset:\n{sample_csv}"
+                }
             ],
-            temperature=0.2
+            temperature=0.1
         )
 
-        report = response.choices[0].message.content
+        report_content = response.choices[0].message.content
+        return {"success": True, "report": report_content}
 
-        return {
-            "success": True,
-            "report": report
-        }
-
-    except Exception as e:
-        print(f"Error during audit execution: {e}")
+    except openai.AuthenticationError:
         return {
             "success": False,
-            "error": str(e)
+            "error": "Invalid OpenAI API key. Check your OPENAI_API_KEY variable in Render."
+        }
+    except openai.RateLimitError:
+        return {
+            "success": False,
+            "error": "OpenAI API quota exceeded or insufficient account balance. Check your OpenAI billing."
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"An unexpected error occurred during execution: {str(e)}"
         }
