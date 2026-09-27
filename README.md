@@ -49,25 +49,26 @@ EquiAudit AI utilizes a decoupled client-server architecture designed for high-t
 
 ### 📐 High-Level Data Flow
 
+## 🏗️ System Architecture
+
+EquiAudit AI utilizes a decoupled client-server architecture designed for high-throughput candidate dataset processing and real-time LLM compliance auditing.
+
+### 📐 High-Level Data Flow
+
 ```mermaid
 graph TD
-    %% User Interaction
-    Client[User / Recruiting Admin] -->|1. Uploads Candidate CSV & Selects Target ATS| Frontend[Next.js Frontend / Vercel]
+    Client["User / Recruiting Admin"] -->|"1. Uploads CSV & Selects ATS"| Frontend["Next.js Frontend (Vercel)"]
+    Frontend -->|"2. POST /api/audit"| Backend["FastAPI Backend (Render)"]
     
-    %% API Request
-    Frontend -->|2. Multipart Form POST /api/audit| Backend[FastAPI Backend Engine / Render]
-    
-    %% Backend Processing
-    subgraph Backend Pipeline
-        Backend -->|3. Read & Validate String Stream| Stream[CSV Ingestion & Normalization]
-        Stream -->|4. Process Candidate Demographics| Math[EEOC 4/5ths Impact Ratio Calculator]
-        Backend -->|5. Platform-Native System Prompt + CSV Data| LLM[OpenAI GPT-4o API]
+    subgraph Pipeline ["Backend Processing Pipeline"]
+        Backend -->|"3. Stream & Validate"| Stream["CSV Ingestion Module"]
+        Stream -->|"4. Calculate Selection Rates"| Math["EEOC 4/5ths Impact Calculator"]
+        Backend -->|"5. Inject Context & Prompt"| LLM["OpenAI GPT-4o API"]
     end
     
-    %% Response Cycle
-    LLM -->|6. Platform-Specific Remediation & Audit Report| Backend
-    Backend -->|7. Structured JSON Payload| Frontend
-    Frontend -->|8. Interactive Compliance Dashboard & Playbook| Client
+    LLM -->|"6. Return ATS Remediation Plan"| Backend
+    Backend -->|"7. Return JSON Payload"| Frontend
+    Frontend -->|"8. Render Compliance Dashboard"| Client
 
 
 ---
